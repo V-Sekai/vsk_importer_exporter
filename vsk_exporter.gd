@@ -792,8 +792,11 @@ func _user_content_submission_cancelled() -> void:
 
 func _create_temp_folder() -> void:
 	var directory: Directory = Directory.new()
-	if directory.make_dir("user://temp") != OK:
-		printerr("Could not create temp directory")
+	var err: int = directory.make_dir("user://temp")
+	if err != OK:
+		printerr("Could not create temp directory. Errror code %s" % str(err))
+	else:
+		print("Created temp directory!")
 
 func _ready():
 	VSKEditor.connect("user_content_submission_requested", self, "_user_content_submission_requested", [], CONNECT_DEFERRED)
