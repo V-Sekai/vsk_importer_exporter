@@ -762,7 +762,7 @@ func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: 
 		
 	var packed_scene: PackedScene = null
 	
-	if p_upload_data["user_content_type"] == VSKSDK.UserContentType.Avatar:
+	if p_upload_data["user_content_type"] == VSKEditor.UserContentType.Avatar:
 		var packed_scene_dict: Dictionary = create_packed_scene_for_avatar(root,\
 		node,\
 		ik_pose_fixer,\
@@ -777,7 +777,7 @@ func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: 
 			p_callbacks["packed_scene_created"].call_func(packed_scene)
 		else:
 			p_callbacks["packed_scene_creation_failed"].call_func("Avatar export failed!")
-	elif p_upload_data["user_content_type"] == VSKSDK.UserContentType.Map:
+	elif p_upload_data["user_content_type"] == VSKEditor.UserContentType.Map:
 		pass
 	
 	if !user_content_submission_cancelled and packed_scene:
@@ -796,8 +796,8 @@ func _create_temp_folder() -> void:
 		printerr("Could not create temp directory")
 
 func _ready():
-	VSKSDK.connect("user_content_submission_requested", self, "_user_content_submission_requested", [], CONNECT_DEFERRED)
-	VSKSDK.connect("user_content_submission_cancelled", self, "_user_content_submission_cancelled", [], CONNECT_DEFERRED)
+	VSKEditor.connect("user_content_submission_requested", self, "_user_content_submission_requested", [], CONNECT_DEFERRED)
+	VSKEditor.connect("user_content_submission_cancelled", self, "_user_content_submission_cancelled", [], CONNECT_DEFERRED)
 	
 	_create_temp_folder()
 	
