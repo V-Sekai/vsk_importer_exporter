@@ -790,19 +790,24 @@ func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: 
 func _user_content_submission_cancelled() -> void:
 	user_content_submission_cancelled = true
 
-func _create_temp_folder() -> void:
+func create_temp_folder() -> int:
 	var directory: Directory = Directory.new()
-	var err: int = directory.make_dir("user://temp")
-	if err != OK:
-		printerr("Could not create temp directory. Errror code %s" % str(err))
-	else:
-		print("Created temp directory!")
+	var err: int = OK
+	
+	if !directory.dir_exists("user://temp"):
+		err = directory.make_dir("user://temp")
+		if err != OK:
+			printerr("Could not create temp directory. Errror code %s" % str(err))
+		else:
+			print("Created temp directory!")
+			
+	return err
 
 func _ready():
 	VSKEditor.connect("user_content_submission_requested", self, "_user_content_submission_requested", [], CONNECT_DEFERRED)
 	VSKEditor.connect("user_content_submission_cancelled", self, "_user_content_submission_cancelled", [], CONNECT_DEFERRED)
 	
-	_create_temp_folder()
+	create_temp_folder()
 	
 
 func setup() -> void:
