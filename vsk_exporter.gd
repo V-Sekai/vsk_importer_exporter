@@ -564,7 +564,7 @@ static func _fix_humanoid_skeleton(
 	
 static func convert_to_runtime_user_content(p_node: Node, p_script: Script) -> Node:
 	# Clear the preview camera
-	var camera_node_path = p_node.get("preview_camera_path")
+	var camera_node_path = p_node.get("vskeditor_preview_camera_path")
 	if camera_node_path is NodePath:
 		var camera: Camera = p_node.get_node_or_null(camera_node_path)
 		if camera is Camera:
@@ -572,7 +572,7 @@ static func convert_to_runtime_user_content(p_node: Node, p_script: Script) -> N
 			camera.get_parent().remove_child(camera)
 	
 	# Clear all the pipelines
-	for pipeline_path in p_node.get("pipeline_paths"):
+	for pipeline_path in p_node.get("vskeditor_pipeline_paths"):
 		if pipeline_path is NodePath:
 			var pipeline: Node = p_node.get_node_or_null(pipeline_path)
 			if pipeline is Node:
