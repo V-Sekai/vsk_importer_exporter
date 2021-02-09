@@ -9,6 +9,8 @@ var user_content_submission_cancelled: bool = false
 
 const EXPORT_FLAGS = ResourceSaver.FLAG_COMPRESS | ResourceSaver.FLAG_OMIT_EDITOR_PROPERTIES
 
+const vsk_types_const = preload("vsk_types.gd")
+
 const avatar_definition_const = preload("res://addons/vsk_avatar/vsk_avatar_definition.gd")
 const avatar_definition_runtime_const = preload("res://addons/vsk_avatar/vsk_avatar_definition_runtime.gd")
 
@@ -17,7 +19,9 @@ const map_definition_runtime_const = preload("res://addons/vsk_map/vsk_map_defin
 
 const bone_lib_const = preload("res://addons/vsk_avatar/bone_lib.gd")
 const node_util_const = preload("res://addons/gdutil/node_util.gd")
+
 const avatar_callback_const = preload("res://addons/vsk_avatar/avatar_callback.gd")
+const map_callback_const = preload("res://addons/vsk_map/map_callback.gd")
 
 const validator_avatar_const = preload("vsk_avatar_validator.gd")
 const validator_map_const = preload("vsk_map_validator.gd")
@@ -567,6 +571,15 @@ static func convert_to_runtime_user_content(p_node: Node, p_script: Script) -> N
 			camera.queue_free()
 			camera.get_parent().remove_child(camera)
 	
+	# Clear all the pipelines
+	for pipeline_path in p_node.get("pipeline_paths"):
+		if pipeline_path is NodePath:
+			var pipeline: Node = p_node.get_node_or_null(pipeline_path)
+			if pipeline is Node:
+				pipeline.queue_free()
+				pipeline.get_parent().remove_child(pipeline)
+	
+	# Save all the properties
 	var property_list: Array = p_node.get_property_list()
 	var property_dictionary: Dictionary = {}
 	for property in property_list:
@@ -596,7 +609,7 @@ func create_packed_scene_for_avatar(p_root: Node,\
 	p_external_transform_fixer) -> Dictionary:
 	
 	var packed_scene_export: PackedScene = null
-	var err: int = OK
+	var err: int = avatar_callback_const.AVATAR_FAILED
 	
 	var dictionary : Dictionary = create_sanitised_duplication(p_node,\
 	validator_avatar_const.new())
@@ -613,7 +626,6 @@ func create_packed_scene_for_avatar(p_root: Node,\
 		if duplicate_node._skeleton_node and duplicate_node.humanoid_data:
 			has_humanoid_skeleton = true
 			
-		err = avatar_callback_const.AVATAR_OK
 		if has_humanoid_skeleton:
 			var humanoid_skeleton_dict: Dictionary = _fix_humanoid_skeleton(p_root, duplicate_node, p_ik_pose_fixer, p_rotation_fixer, p_external_transform_fixer)
 			err = humanoid_skeleton_dict["err"]
@@ -625,13 +637,14 @@ func create_packed_scene_for_avatar(p_root: Node,\
 			packed_scene_export = PackedScene.new()
 			
 			duplicate_node.set_name(p_node.get_name()) # Reset name
-			packed_scene_export.pack(duplicate_node)
+			if packed_scene_export.pack(duplicate_node) == OK:
+				err = avatar_callback_const.AVATAR_OK
 	else:
 		err = avatar_callback_const.AVATAR_COULD_NOT_SANITISE
 	
 	# Cleanup
-	duplicate_node.queue_free()
-	duplicate_node.get_parent().remove_child(duplicate_node)
+	if duplicate_node:
+		duplicate_node.free()
 	
 	return {"packed_scene":packed_scene_export, "err":err}
 	
@@ -669,20 +682,22 @@ func export_avatar(\
 Map
 """
 	
-func create_packed_scene_for_map(p_root, p_node) -> PackedScene:
+func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 	var validator:validator_map_const = validator_map_const.new()
 		
 	print("Creating sanitised duplicate...")
 	var dictionary : Dictionary = create_sanitised_duplication(p_node, validator)
 	print("Done sanitised duplicate...")
 
+	var err: int = map_callback_const.MAP_FAILED
 
+	var packed_scene_export: PackedScene = null
 	var duplicate_node: Node = dictionary["node"]
 	
 	if duplicate_node:
 		var entity_resource_array : Array = []
 		
-		var packed_scene_export = PackedScene.new()
+		packed_scene_export = PackedScene.new()
 		
 		print("Converting to runtime user content...")
 		duplicate_node = convert_to_runtime_user_content(duplicate_node, map_definition_runtime_const)
@@ -724,30 +739,37 @@ func create_packed_scene_for_map(p_root, p_node) -> PackedScene:
 		print("Packing map...")
 		
 		duplicate_node.set_name(p_node.get_name()) # Reset name
-		packed_scene_export.pack(duplicate_node)
-
+		if packed_scene_export.pack(duplicate_node) == OK:
+			err = map_callback_const.MAP_OK
+	
+	if duplicate_node:
 		duplicate_node.free()
 
-		return packed_scene_export
-		
-	return null
+	return {"packed_scene":packed_scene_export, "err":err}
 		
 func export_map(p_root: Node, p_node: Node, p_path: String) -> void:
 	print("Exporting map...")
-	var packed_scene: PackedScene = create_packed_scene_for_map(p_root, p_node)
+	var packed_scene_dict: Dictionary = create_packed_scene_for_map(p_root, p_node)
 	
-	print("Saving map...")
-	var err: int = save_user_content_resource(p_path, packed_scene)
+	var err: int  = packed_scene_dict["err"]
+	
 	if err == OK:
-		print("---Map exported successfully!---")
-	else:
-		print("---Map exported failed!---")
+		print("Saving map...")
+		err = save_user_content_resource(p_path, packed_scene_dict["packed_scene"])
+		if err == OK:
+			print("---Map exported successfully!---")
+			return
+	
+	
+	print("---Map exported failed!---")
 
 """
 Online submission
 """
 
 func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: Dictionary) -> void:
+	print("vsk_exporter::_user_content_submission_requested")
+	
 	# Clear the cancel flag
 	user_content_submission_cancelled = false
 	
@@ -756,29 +778,40 @@ func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: 
 
 	var root: Node = export_data["root"]
 	var node: Node = export_data["node"]
-	var ik_pose_fixer: Reference = export_data["ik_pose_fixer"]
-	var rotation_fixer: Reference = export_data["rotation_fixer"]
-	var external_transform_fixer: Reference = export_data["external_transform_fixer"]
+	var ik_pose_fixer: Reference = export_data.get("ik_pose_fixer")
+	var rotation_fixer: Reference = export_data.get("rotation_fixer")
+	var external_transform_fixer: Reference = export_data.get("external_transform_fixer")
 		
 	var packed_scene: PackedScene = null
 	
-	if p_upload_data["user_content_type"] == VSKEditor.UserContentType.Avatar:
-		var packed_scene_dict: Dictionary = create_packed_scene_for_avatar(root,\
-		node,\
-		ik_pose_fixer,\
-		rotation_fixer,\
-		external_transform_fixer)
-		
-		var err: int = packed_scene_dict["err"]
-		
-		if err == avatar_callback_const.AVATAR_OK:
-			packed_scene = packed_scene_dict["packed_scene"]
+	match p_upload_data["user_content_type"]:
+		vsk_types_const.UserContentType.Avatar:
+			var packed_scene_dict: Dictionary = create_packed_scene_for_avatar(root,\
+			node,\
+			ik_pose_fixer,\
+			rotation_fixer,\
+			external_transform_fixer)
 			
-			p_callbacks["packed_scene_created"].call_func(packed_scene)
-		else:
-			p_callbacks["packed_scene_creation_failed"].call_func("Avatar export failed!")
-	elif p_upload_data["user_content_type"] == VSKEditor.UserContentType.Map:
-		pass
+			var err: int = packed_scene_dict["err"]
+			
+			if err == avatar_callback_const.AVATAR_OK:
+				packed_scene = packed_scene_dict["packed_scene"]
+				
+				p_callbacks["packed_scene_created"].call_func(packed_scene)
+			else:
+				p_callbacks["packed_scene_creation_failed"].call_func("Avatar export failed!")
+		vsk_types_const.UserContentType.Map:
+			var packed_scene_dict: Dictionary = create_packed_scene_for_map(root,\
+			node)
+			
+			var err: int = packed_scene_dict["err"]
+			
+			if err == map_callback_const.MAP_OK:
+				packed_scene = packed_scene_dict["packed_scene"]
+				
+				p_callbacks["packed_scene_created"].call_func(packed_scene)
+			else:
+				p_callbacks["packed_scene_creation_failed"].call_func("Avatar export failed!")
 	
 	if !user_content_submission_cancelled and packed_scene:
 		var pre_uploading_callback: FuncRef = p_callbacks["packed_scene_pre_uploading"]
