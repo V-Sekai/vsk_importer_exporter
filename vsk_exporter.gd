@@ -64,32 +64,80 @@ func is_valid_entity(p_node: Node, p_validator: Reference) -> bool:
 	return false
 
 func sanitise_array(p_array: Array, p_table: Dictionary, p_visited: Dictionary, p_root: Node, p_validator: Reference) -> Dictionary:
+	var new_array = []
 	if p_array:
-		for element in p_array:
-			match typeof(element):
+		for i in range(0, p_array.size()):
+			var element = p_array[i]
+			match typeof(p_array[i]):
 				TYPE_ARRAY:
-					p_visited = sanitise_array(element, p_table, p_visited, p_root, p_validator)
+					var result: Dictionary = sanitise_array(element, p_table, p_visited, p_root, p_validator)
+					p_visited = result["visited"]
+					new_array.push_back(result["array"])
 				TYPE_DICTIONARY:
-					p_visited = sanitise_dictionary(element, p_table, p_visited, p_root, p_validator)
+					var result: Dictionary = sanitise_dictionary(element, p_table, p_visited, p_root, p_validator)
+					p_visited = result["visited"]
+					new_array.push_back(result["dictionary"])
 				TYPE_OBJECT:
-					p_visited = sanitise_object(element, p_table, p_visited, p_root, p_validator)
+					var subobject: Object = p_array[i]
+					if subobject:
+						if p_table.has(subobject):
+							var duplicated_subobject: Object = p_table[subobject]
+							if subobject is Resource:
+								# If the resource isn't valid for this validator, remove it
+								if ! p_validator.is_resource_type_valid(subobject) or ! p_validator.is_script_valid_for_resource(subobject.get_script()):
+									print("property array index %s is invalid" % str(i))
+									duplicated_subobject = null
+							subobject = duplicated_subobject
+								
+						
+						if subobject != null and p_visited["visited_nodes"].find(subobject) == -1:
+							p_visited = sanitise_object(subobject, p_table, p_visited, p_root, p_validator)
+						
+						# Set the new object
+						new_array.push_back(subobject)
+				_:
+					new_array.push_back(p_array[i])
+					
 
-	return p_visited
+	return {"visited":p_visited, "array":new_array}
 
 
 func sanitise_dictionary(
 	p_dictionary: Dictionary, p_table: Dictionary, p_visited: Dictionary, p_root: Node, p_validator: Reference) -> Dictionary:
+	var new_dictionary: Dictionary = {}
 	if p_dictionary:
 		for key in p_dictionary.keys():
 			match typeof(key):
 				TYPE_ARRAY:
-					p_visited = sanitise_array(key, p_table, p_visited, p_root, p_validator)
+					var result: Dictionary = sanitise_array(key, p_table, p_visited, p_root, p_validator)
+					p_visited = result["visited"]
+					new_dictionary[key] = result["array"]
 				TYPE_DICTIONARY:
-					p_visited = sanitise_dictionary(key, p_table, p_visited, p_root, p_validator)
+					var result: Dictionary = sanitise_dictionary(key, p_table, p_visited, p_root, p_validator)
+					p_visited = result["visited"]
+					new_dictionary[key] = result["dictionary"]
 				TYPE_OBJECT:
-					p_visited = sanitise_object(key, p_table, p_visited, p_root, p_validator)
-
-	return p_visited
+					var subobject: Object = p_dictionary[key]
+					if subobject:
+						if p_table.has(subobject):
+							var duplicated_subobject: Object = p_table[subobject]
+							if subobject is Resource:
+								# If the resource isn't valid for this validator, remove it
+								if ! p_validator.is_resource_type_valid(subobject) or ! p_validator.is_script_valid_for_resource(subobject.get_script()):
+									print("property dictionary key %s is invalid" % str(key))
+									duplicated_subobject = null
+							subobject = duplicated_subobject
+								
+									
+						if subobject != null and p_visited["visited_nodes"].find(subobject) == -1:
+							p_visited = sanitise_object(subobject, p_table, p_visited, p_root, p_validator)
+						
+						# Set the new object
+						new_dictionary[key] = subobject
+				_:
+					new_dictionary[key] = p_dictionary[key]
+						
+	return {"visited":p_visited, "dictionary":new_dictionary}
 
 
 func sanitise_object(p_object: Object, p_table: Dictionary, p_visited: Dictionary, p_root: Node, p_validator: Reference) -> Dictionary:
@@ -103,14 +151,18 @@ func sanitise_object(p_object: Object, p_table: Dictionary, p_visited: Dictionar
 				TYPE_ARRAY:
 					var array = p_object.get(property["name"])
 					if typeof(array) == TYPE_ARRAY:
-						p_visited = sanitise_array(array, p_table, p_visited, p_root, p_validator)
+						var result: Dictionary = sanitise_array(array, p_table, p_visited, p_root, p_validator)
+						p_visited = result["visited"]
+						
+						p_object.set(property["name"], result["array"])
 				TYPE_DICTIONARY:
 					var dictionary = p_object.get(property["name"])
 					if typeof(dictionary) == TYPE_DICTIONARY:
-						p_visited = sanitise_dictionary(dictionary, p_table, p_visited, p_root, p_validator)
+						var result: Dictionary = sanitise_dictionary(dictionary, p_table, p_visited, p_root, p_validator)
+						p_visited = result["visited"]
+						p_object.set(property["name"], result["dictionary"])
 				TYPE_OBJECT:
 					var subobject: Object = p_object.get(property["name"])
-						
 					if subobject:
 						if p_table.has(subobject):
 							var duplicated_subobject: Object = p_table[subobject]
@@ -130,7 +182,7 @@ func sanitise_object(p_object: Object, p_table: Dictionary, p_visited: Dictionar
 												
 							elif subobject is Resource:
 								# If the resource isn't valid for this validator, remove it
-								if ! p_validator.is_resource_type_valid(subobject) and ! p_validator.is_script_valid_for_resource(subobject.get_script()):
+								if ! p_validator.is_resource_type_valid(subobject) or ! p_validator.is_script_valid_for_resource(subobject.get_script()):
 									print("property %s is invalid" % property["name"])
 									duplicated_subobject = null
 							subobject = duplicated_subobject
@@ -287,9 +339,50 @@ func sanitise_node(
 			p_visited = sanitise_node(child_duplicate_node, child_reference_node, p_table, p_visited, p_duplicate_root, p_reference_root, p_validator)
 	
 	return p_visited
+	
+func convert_object(p_table: Dictionary, p_subobject: Object, p_root: Node, p_validator: Reference) -> Dictionary:
+	if p_subobject is StreamTexture:
+		print("Texture %s processing..." % p_subobject.resource_path)
+		var image: Image = p_subobject.get_data()
+			
+		print("Image loaded...")
+			
+		var new_image_texture: ImageTexture = ImageTexture.new()
+		new_image_texture.create_from_image(image, p_subobject.flags)
+		p_table[p_subobject] = new_image_texture
+	elif p_subobject is TextureArray:
+		print("TextureArray %s processing..." % p_subobject.resource_path)
+		
+		var new_tex_array: TextureArray = TextureArray.new()
+		
+		new_tex_array.resource_local_to_scene = true
+		new_tex_array.take_over_path("")
+		new_tex_array.setup_local_to_scene()
+		
+		for i in range(0, p_subobject.get_depth()):
+			var image: Image = p_subobject.get_layer_data(i)
+			if i == 0:
+				new_tex_array.create(p_subobject.get_width(), p_subobject.get_height(), p_subobject.get_depth(), image.get_format(), p_subobject.flags)
+			new_tex_array.set_layer_data(image, i)
+		
+		p_table[p_subobject] = new_tex_array
+	else:
+		if p_subobject is Resource:
+			if p_subobject.resource_path != "":
+				print("Duplicating resource: " + p_subobject.resource_path)
+				var duplicate_resource: Resource = clone_resource(p_subobject)
+				duplicate_resource.resource_local_to_scene = true
+				duplicate_resource.take_over_path("")
+				duplicate_resource.setup_local_to_scene()
+				print("Duplicated resource: " + duplicate_resource.resource_path)
+				p_table[p_subobject] = duplicate_resource
+			else:
+				p_table[p_subobject] = p_subobject
+	
+	return create_object_duplication_table_for_object(p_subobject, p_table, p_root, p_validator)
 
 func create_object_duplication_table_for_array(
-	p_array: Object,
+	p_array: Array,
 	p_table: Dictionary,
 	p_root: Node,
 	p_validator: Reference
@@ -303,7 +396,9 @@ func create_object_duplication_table_for_array(
 					p_table = create_object_duplication_table_for_dictionary(
 						element, p_table, p_root, p_validator)
 				TYPE_OBJECT:
-					p_table = create_object_duplication_table_for_object(element, p_table, p_root, p_validator)
+					var subobject: Object = element
+					if ! p_table.has(subobject):
+						p_table = convert_object(p_table, subobject, p_root, p_validator)
 
 	return p_table
 
@@ -322,7 +417,9 @@ func create_object_duplication_table_for_dictionary(
 				TYPE_DICTIONARY:
 					p_table = create_object_duplication_table_for_dictionary(key, p_table, p_root, p_validator)
 				TYPE_OBJECT:
-					p_table = create_object_duplication_table_for_object(key, p_table, p_root, p_validator)
+					var subobject: Object = p_dictionary[key]
+					if ! p_table.has(subobject):
+						p_table = convert_object(p_table, subobject, p_root, p_validator)
 
 	return p_table
 
@@ -394,28 +491,8 @@ func create_object_duplication_table_for_object(
 									print("Valid script!")
 							else:
 								p_table[subobject] = null
-						elif subobject is StreamTexture:
-							print("Texture %s processing..." % subobject.resource_path)
-							var image: Image = subobject.get_data()
-								
-							print("Image loaded...")
-								
-							var image_texture: ImageTexture = ImageTexture.new()
-							image_texture.create_from_image(image, subobject.flags)
-							p_table[subobject] = image_texture
 						else:
-							if subobject is Resource:
-								if subobject.resource_path != "":
-									print("Duplicating resource: " + subobject.resource_path)
-									var duplicate_resource: Resource = clone_resource(subobject)
-									duplicate_resource.resource_local_to_scene = true
-									duplicate_resource.take_over_path("")
-									duplicate_resource.setup_local_to_scene()
-									print("Duplicated resource: " + duplicate_resource.resource_path)
-									p_table[subobject] = duplicate_resource
-								else:
-									p_table[subobject] = subobject
-							p_table = create_object_duplication_table_for_object(subobject, p_table, p_root, p_validator)
+							p_table = convert_object(p_table, subobject, p_root, p_validator)
 	return p_table
 
 

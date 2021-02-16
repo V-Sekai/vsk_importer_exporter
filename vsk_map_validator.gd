@@ -66,6 +66,7 @@ const valid_resource_whitelist = {
 	"AtlasTexture": AtlasTexture,
 	"AudioStreamSample": AudioStreamSample,
 	"AudioStreamOGGVorbis": AudioStreamOGGVorbis,
+	"BakedLightmapData": BakedLightmapData,
 	"BoxShape": BoxShape,
 	"CapsuleMesh": CapsuleMesh,
 	"CapsuleShape": CapsuleShape,
@@ -110,6 +111,9 @@ const valid_resource_whitelist = {
 	"SphereShape": SphereShape,
 	"StreamTexture": StreamTexture,
 	"Texture": Texture,
+	"Texture3D": Texture3D,
+	"TextureArray": TextureArray,
+	"TextureLayered": TextureLayered,
 	"ViewportTexture": ViewportTexture
 }
 
