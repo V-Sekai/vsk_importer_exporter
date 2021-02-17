@@ -361,8 +361,13 @@ func convert_object(p_table: Dictionary, p_subobject: Object, p_root: Node, p_va
 		
 		for i in range(0, p_subobject.get_depth()):
 			var image: Image = p_subobject.get_layer_data(i)
+			
+			image.resource_local_to_scene = true
+			image.take_over_path("")
+			image.setup_local_to_scene()
+			
 			if i == 0:
-				new_tex_array.create(p_subobject.get_width(), p_subobject.get_height(), p_subobject.get_depth(), image.get_format(), p_subobject.flags)
+				new_tex_array.create(p_subobject.get_width(), p_subobject.get_height(), p_subobject.get_depth(), p_subobject.get_format(), p_subobject.flags)
 			new_tex_array.set_layer_data(image, i)
 		
 		p_table[p_subobject] = new_tex_array
@@ -826,6 +831,7 @@ func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 		
 func export_map(p_root: Node, p_node: Node, p_path: String) -> void:
 	print("Exporting map...")
+	
 	var packed_scene_dict: Dictionary = create_packed_scene_for_map(p_root, p_node)
 	
 	var err: int  = packed_scene_dict["err"]
@@ -833,12 +839,13 @@ func export_map(p_root: Node, p_node: Node, p_path: String) -> void:
 	if err == OK:
 		print("Saving map...")
 		err = save_user_content_resource(p_path, packed_scene_dict["packed_scene"])
+		
 		if err == OK:
 			print("---Map exported successfully!---")
-			return
-	
-	
-	print("---Map exported failed!---")
+		else:
+			print("---Map exported failed!---")
+	else:
+		print("---Map exported failed!---")
 
 """
 Online submission
@@ -914,10 +921,11 @@ func create_temp_folder() -> int:
 	return err
 
 func _ready():
-	VSKEditor.connect("user_content_submission_requested", self, "_user_content_submission_requested", [], CONNECT_DEFERRED)
-	VSKEditor.connect("user_content_submission_cancelled", self, "_user_content_submission_cancelled", [], CONNECT_DEFERRED)
-	
-	create_temp_folder()
+	if Engine.is_editor_hint():
+		VSKEditor.connect("user_content_submission_requested", self, "_user_content_submission_requested", [], CONNECT_DEFERRED)
+		VSKEditor.connect("user_content_submission_cancelled", self, "_user_content_submission_cancelled", [], CONNECT_DEFERRED)
+		
+		create_temp_folder()
 	
 
 func setup() -> void:
