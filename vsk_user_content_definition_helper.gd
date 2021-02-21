@@ -1,5 +1,11 @@
 tool
 
+enum UserContentFormat {
+	PORTABLE, # Non-native textures, compatible everywhere
+	PC, # PC class hardware, DXT compression
+	MOBILE # Mobile class hardware, PVR compression, S3TC/ETC/2
+}
+
 class VSKEditorProperties extends Reference:
 	var vskeditor_preview_type: String = "Camera"
 	var vskeditor_preview_camera_path: NodePath = NodePath()

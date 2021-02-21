@@ -1,6 +1,8 @@
 tool
 extends Node
 
+"""
+
 const NO_PARENT_SAVED = 0x7FFFFFFF
 const NAME_INDEX_BITS = 18
 
@@ -69,13 +71,16 @@ static func get_ref_node_from_relative_path(p_node: RefNode, p_path: String) -> 
 
 # Build a node tree of RefNodes and return the root
 static func build_ref_node_tree(
-	p_node_data_array: Array, p_names: PoolStringArray, p_node_paths: PoolStringArray, p_editable_instances: Array
+	p_node_data_array: Array,
+	p_names: PoolStringArray,
+	p_node_paths: PoolStringArray,
+	p_editable_instances: Array
 ):
 	var root_ref_node: RefNode = null
 	var ref_nodes: Array = []
-
-	var has_root: bool = false
-
+	
+	#var has_root: bool = false
+	
 	for snode in p_node_data_array:
 		var ref_node = RefNode.new()
 		if p_names.size() > snode.name_id - 1:
@@ -94,7 +99,7 @@ static func build_ref_node_tree(
 		else:
 			if root_ref_node == null:
 				return null
-			
+				
 			if parent_id & FLAG_ID_IS_PATH:
 				var idx: int = parent_id & FLAG_MASK
 				if p_node_paths.size() > idx - 1:
@@ -112,7 +117,7 @@ static func build_ref_node_tree(
 					ref_node.parent = ref_nodes[parent_id & FLAG_MASK]
 					ref_nodes[parent_id & FLAG_MASK].children.push_back(ref_node)
 					# TODO: check circular dependency
-
+					
 		if type == TYPE_INSTANCE:
 			ref_node.class_str = "Instanced"
 			var instance_id: int = snode.instance_id
@@ -121,16 +126,14 @@ static func build_ref_node_tree(
 		else:
 			if p_names.size() > snode.type_id - 1:
 				ref_node.class_str = p_names[snode.type_id]
-
+		
 		ref_node.id = ref_nodes.size()
 		ref_nodes.push_back(ref_node)
-
+		
 	return root_ref_node
 
 # Read the next integer in the array and increment the internal IDX
 static func reader_snode(p_snodes: PoolIntArray, p_reader: Dictionary) -> Dictionary:
-	var result = null
-
 	if p_reader.idx < p_snodes.size() and p_reader.idx >= 0:
 		p_reader.result = p_snodes[p_reader.idx]
 		p_reader.idx += 1
@@ -140,7 +143,7 @@ static func reader_snode(p_snodes: PoolIntArray, p_reader: Dictionary) -> Dictio
 
 	return p_reader
 
-static func sanitise_packed_scene_for_map(p_packed_scene: PackedScene, p_strip_all_entities: bool) -> PackedScene:
+static func sanitise_packed_scene_for_map(p_packed_scene: PackedScene, _strip_all_entities: bool) -> PackedScene:
 	print("Sanitising map...")
 	if p_packed_scene == null:
 		return null
@@ -152,7 +155,7 @@ static func sanitise_packed_scene_for_map(p_packed_scene: PackedScene, p_strip_a
 	if node_count > 0:
 		var snodes: PoolIntArray = packed_scene_bundle["nodes"]
 		var snode_reader = {"idx": 0, "result": -1}
-		for i in range(0, node_count):
+		for _i in range(0, node_count):
 			var nd = NodeData.new()
 
 			snode_reader = reader_snode(snodes, snode_reader)
@@ -195,7 +198,7 @@ static func sanitise_packed_scene_for_map(p_packed_scene: PackedScene, p_strip_a
 			else:
 				return null
 
-			for j in range(0, property_count):
+			for _j in range(0, property_count):
 				var name: int = -1
 				snode_reader = reader_snode(snodes, snode_reader)
 				if snode_reader.idx != -1:
@@ -212,22 +215,24 @@ static func sanitise_packed_scene_for_map(p_packed_scene: PackedScene, p_strip_a
 
 				nd.properties.append({"name": name, "value": value})
 
+			
 			var group_count = 0
 			snode_reader = reader_snode(snodes, snode_reader)
 			if snode_reader.idx != -1:
 				group_count = snode_reader.result
 			else:
 				return null
-
+			
+			
 			# Parse groups but don't use them
-			for j in range(0, group_count):
+			for _j in range(0, group_count):
 				var group: int = -1
 				snode_reader = reader_snode(snodes, snode_reader)
 				if snode_reader.idx != -1:
 					group = snode_reader.result
 				else:
 					return null
-
+			
 			node_data_array.push_back(nd)
 	
 	#var ref_root_node : RefNode = build_ref_node_tree(node_data_array, packed_scene_bundle["names"], packed_scene_bundle["node_paths"], packed_scene_bundle["editable_instances"])
@@ -235,6 +240,8 @@ static func sanitise_packed_scene_for_map(p_packed_scene: PackedScene, p_strip_a
 	#	return null
 
 	return p_packed_scene
+
+"""
 
 func setup() -> void:
 	pass

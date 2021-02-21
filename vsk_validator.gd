@@ -25,16 +25,16 @@ func is_script_valid_for_resource(p_script: Script):
 	else:
 		return false
 
-func is_node_type_valid(p_node : Node) -> bool:
+func is_node_type_valid(_node : Node) -> bool:
 	return false
 
-func is_resource_type_valid(p_resource : Resource) -> bool:
+func is_resource_type_valid(_resource : Resource) -> bool:
 	return false
 
-func is_path_an_entity(p_packed_scene_path : String) -> bool:
+func is_path_an_entity(_packed_scene_path : String) -> bool:
 	return false
 	
-func is_valid_entity_script(p_script : Script) -> bool:
+func is_valid_entity_script(_script : Script) -> bool:
 	return false
 
 func sanitise_node(p_node: Node) -> Node:

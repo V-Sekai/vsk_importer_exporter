@@ -209,7 +209,7 @@ func sanitise_object(p_object: Object, p_table: Dictionary, p_visited: Dictionar
 
 	return p_visited
 	
-func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplicate_root: Node, p_reference_root: Node, p_visited: Dictionary, p_validator: Reference) -> Dictionary:
+func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplicate_root: Node, p_visited: Dictionary, p_validator: Reference) -> Dictionary:
 	print("Sanitising Instance: %s" % p_duplicate_node.get_name())
 	
 	# Check if this node is deriving an entity scene
@@ -231,23 +231,22 @@ func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplica
 						child_reference_node = p_reference_node.get_child(i)
 					
 				if is_valid_entity(child_duplicate_node, p_validator):
-					sanitise_owner(child_duplicate_node, child_reference_node, p_duplicate_root, p_reference_root)
+					sanitise_owner(child_duplicate_node, child_reference_node, p_duplicate_root)
 				else:
 					child_duplicate_node.set_filename("")
 		else:
 			p_duplicate_node.set_filename("")
-		sanitise_owner(p_duplicate_node, p_reference_node, p_duplicate_root, p_reference_root)
+		sanitise_owner(p_duplicate_node, p_reference_node, p_duplicate_root)
 	else:
 		p_duplicate_node.set_filename("")
-		sanitise_owner(p_duplicate_node, p_reference_node, p_duplicate_root, p_reference_root)
+		sanitise_owner(p_duplicate_node, p_reference_node, p_duplicate_root)
 			
 	return p_visited
 	
 func sanitise_owner(
 	p_duplicate_node: Node,
 	p_reference_node: Node,
-	p_duplicate_root: Node,
-	p_reference_root: Node
+	p_duplicate_root: Node
 	) -> void:
 	var reassign_owner: bool = false
 	
@@ -279,14 +278,7 @@ func sanitise_entity_children(
 	
 	###
 	if p_duplicate_root.is_inside_tree():
-		for i in range(0, p_duplicate_node.get_child_count()):
-			var child_duplicate_node = p_duplicate_node.get_child(i)
-			var child_reference_node = null
-			
-			if p_reference_node:
-				if i < p_reference_node.get_child_count():
-					child_reference_node = p_reference_node.get_child(i)
-				
+		for _i in range(0, p_duplicate_node.get_child_count()):
 			p_visited = sanitise_entity_children(p_duplicate_root, p_reference_root, p_table, p_visited, p_duplicate_node, p_reference_node, p_validator, p_entity_root)
 	
 	return p_visited
@@ -306,7 +298,7 @@ func sanitise_node(
 		p_duplicate_node = p_validator.sanitise_node(p_duplicate_node)
 	
 	p_visited = sanitise_object(p_duplicate_node, p_table, p_visited, p_duplicate_root, p_validator)
-	p_visited = sanitise_instance(p_duplicate_node, p_reference_node, p_duplicate_root, p_reference_root, p_visited, p_validator)
+	p_visited = sanitise_instance(p_duplicate_node, p_reference_node, p_duplicate_root, p_visited, p_validator)
 
 	# If this node is an entity, delete all the non-explicitly associated_nodes
 	if p_visited["entity_nodes"].has(p_duplicate_node):
@@ -764,7 +756,7 @@ func export_avatar(\
 Map
 """
 	
-func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
+func create_packed_scene_for_map(p_node: Node) -> Dictionary:
 	var validator:validator_map_const = validator_map_const.new()
 		
 	print("Creating sanitised duplicate...")
@@ -786,7 +778,7 @@ func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 		duplicate_node.map_resources = entity_resource_array
 
 		print("Add entity nodes to instance list...")
-		for i in range(0, dictionary["entity_nodes"].size()):
+		for _i in range(0, dictionary["entity_nodes"].size()):
 			duplicate_node.entity_instance_list.push_back(map_definition_const.EntityInstance.new())
 			
 		print("Caching map resources...")
@@ -829,10 +821,10 @@ func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 
 	return {"packed_scene":packed_scene_export, "err":err}
 		
-func export_map(p_root: Node, p_node: Node, p_path: String) -> void:
+func export_map(p_node: Node, p_path: String) -> void:
 	print("Exporting map...")
 	
-	var packed_scene_dict: Dictionary = create_packed_scene_for_map(p_root, p_node)
+	var packed_scene_dict: Dictionary = create_packed_scene_for_map(p_node)
 	
 	var err: int  = packed_scene_dict["err"]
 	
@@ -881,19 +873,18 @@ func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: 
 			if err == avatar_callback_const.AVATAR_OK:
 				packed_scene = packed_scene_dict["packed_scene"]
 				
-				p_callbacks["packed_scene_created"].call_func(packed_scene)
+				p_callbacks["packed_scene_created"].call_func()
 			else:
 				p_callbacks["packed_scene_creation_failed"].call_func("Avatar export failed!")
 		vsk_types_const.UserContentType.Map:
-			var packed_scene_dict: Dictionary = create_packed_scene_for_map(root,\
-			node)
+			var packed_scene_dict: Dictionary = create_packed_scene_for_map(node)
 			
 			var err: int = packed_scene_dict["err"]
 			
 			if err == map_callback_const.MAP_OK:
 				packed_scene = packed_scene_dict["packed_scene"]
 				
-				p_callbacks["packed_scene_created"].call_func(packed_scene)
+				p_callbacks["packed_scene_created"].call_func()
 			else:
 				p_callbacks["packed_scene_creation_failed"].call_func("Avatar export failed!")
 	
@@ -922,10 +913,13 @@ func create_temp_folder() -> int:
 
 func _ready():
 	if Engine.is_editor_hint():
-		VSKEditor.connect("user_content_submission_requested", self, "_user_content_submission_requested", [], CONNECT_DEFERRED)
-		VSKEditor.connect("user_content_submission_cancelled", self, "_user_content_submission_cancelled", [], CONNECT_DEFERRED)
+		if VSKEditor.connect("user_content_submission_requested", self, "_user_content_submission_requested", [], CONNECT_DEFERRED) != OK:
+			printerr("Could not connect signal 'user_content_submission_requested'")
+		if VSKEditor.connect("user_content_submission_cancelled", self, "_user_content_submission_cancelled", [], CONNECT_DEFERRED) != OK:
+			printerr("Could not connect signal 'user_content_submission_cancelled'")
 		
-		create_temp_folder()
+		if create_temp_folder() != OK:
+			printerr("Could not create temp folder")
 	
 
 func setup() -> void:
