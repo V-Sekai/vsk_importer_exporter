@@ -83,6 +83,8 @@ const valid_resource_whitelist = {
 	"ProxyTexture": ProxyTexture,
 	"RayShape": RayShape,
 	"QuadMesh": QuadMesh,
+	"Resource": Resource,
+	"Shader": Shader,
 	"ShaderMaterial": ShaderMaterial,
 	"Shape": Shape,
 	"Skin": Skin,
