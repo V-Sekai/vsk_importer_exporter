@@ -591,13 +591,15 @@ static func _fix_humanoid_skeleton(
 	
 			mouth_node.free()
 	
+	var ik_pose_output: Dictionary = {}
 	if err == avatar_callback_const.AVATAR_OK:
 		if p_ik_pose_fixer:
-			err = p_ik_pose_fixer.setup_ik_t_pose(p_node, p_node._skeleton_node, p_node.humanoid_data, false)
+			ik_pose_output = p_ik_pose_fixer.setup_ik_t_pose(p_node, p_node._skeleton_node, p_node.humanoid_data, false)
+			err = ik_pose_output["result"]
 	
 	if err == avatar_callback_const.AVATAR_OK:
 		if p_rotation_fixer:
-			err = p_rotation_fixer.fix_rotations(p_node, p_node._skeleton_node, p_node.humanoid_data)
+			err = p_rotation_fixer.fix_rotations(p_node, p_node._skeleton_node, p_node.humanoid_data, ik_pose_output["custom_bone_pose_array"])
 	
 	if err == avatar_callback_const.AVATAR_OK:
 		if p_external_transform_fixer:
