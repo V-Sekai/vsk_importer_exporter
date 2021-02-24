@@ -160,7 +160,8 @@ func is_script_valid_for_resource(p_script: Script):
 
 func is_node_type_valid(p_node : Node) -> bool:
 	if valid_node_whitelist.has(p_node.get_class()):
-		return true
+		if !is_editor_only(p_node):
+			return true
 	return false
 
 func is_resource_type_valid(p_resource : Resource) -> bool:

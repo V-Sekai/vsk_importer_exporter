@@ -1,6 +1,13 @@
 tool
 extends Reference
 
+static func is_editor_only(p_node: Node) -> bool:
+	if p_node is Light:
+		if p_node.editor_only:
+			return true
+			
+	return false
+
 func is_scene_valid_for_root(p_script: Script):
 	if p_script == null:
 		return true
