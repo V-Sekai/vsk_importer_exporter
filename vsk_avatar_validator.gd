@@ -5,6 +5,11 @@ const humanoid_data_const = preload("res://addons/vsk_avatar/humanoid_data.gd")
 const avatar_definition_const = preload("res://addons/vsk_avatar/vsk_avatar_definition.gd")
 const avatar_definition_runtime_const = preload("res://addons/vsk_avatar/vsk_avatar_definition_runtime.gd")
 
+# Support for VRM physics
+const vrm_secondary_const = preload("res://addons/vrm/vrm_secondary.gd")
+const vrm_collidergroup_const = preload("res://addons/vrm/vrm_collidergroup.gd")
+const vrm_springbone_const = preload("res://addons/vrm/vrm_springbone.gd")
+
 const valid_node_whitelist = {
 	"AnimatedSprite3D": AnimatedSprite3D,
 	"Area": Area,
@@ -98,9 +103,20 @@ const valid_resource_whitelist = {
 }
 
 const valid_scene_whitelist = []
-const valid_root_script_whitelist = [avatar_definition_const, avatar_definition_runtime_const]
-const valid_children_script_whitelist = []
-const valid_resource_script_whitelist = [humanoid_data_const]
+const valid_root_script_whitelist = [
+	avatar_definition_const,
+	avatar_definition_runtime_const
+	]
+
+const valid_children_script_whitelist = [
+	vrm_secondary_const
+]
+
+const valid_resource_script_whitelist = [
+	humanoid_data_const,
+	vrm_collidergroup_const,
+	vrm_springbone_const
+	]
 
 func is_script_valid_for_root(p_script: Script):
 	if p_script == null:

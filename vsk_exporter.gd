@@ -17,6 +17,7 @@ const avatar_definition_runtime_const = preload("res://addons/vsk_avatar/vsk_ava
 const map_definition_const = preload("res://addons/vsk_map/vsk_map_definition.gd")
 const map_definition_runtime_const = preload("res://addons/vsk_map/vsk_map_definition_runtime.gd")
 
+const avatar_fixer_const = preload("res://addons/vsk_avatar/avatar_fixer.gd")
 const bone_lib_const = preload("res://addons/vsk_avatar/bone_lib.gd")
 const node_util_const = preload("res://addons/gdutil/node_util.gd")
 
@@ -209,7 +210,7 @@ func sanitise_object(p_object: Object, p_table: Dictionary, p_visited: Dictionar
 
 	return p_visited
 	
-func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplicate_root: Node, p_visited: Dictionary, p_validator: Reference) -> Dictionary:
+func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplicate_root: Node, p_reference_root: Node, p_visited: Dictionary, p_validator: Reference) -> Dictionary:
 	print("Sanitising Instance: %s" % p_duplicate_node.get_name())
 	
 	# Check if this node is deriving an entity scene
@@ -231,22 +232,23 @@ func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplica
 						child_reference_node = p_reference_node.get_child(i)
 					
 				if is_valid_entity(child_duplicate_node, p_validator):
-					sanitise_owner(child_duplicate_node, child_reference_node, p_duplicate_root)
+					sanitise_owner(child_duplicate_node, child_reference_node, p_duplicate_root, p_reference_root)
 				else:
 					child_duplicate_node.set_filename("")
 		else:
 			p_duplicate_node.set_filename("")
-		sanitise_owner(p_duplicate_node, p_reference_node, p_duplicate_root)
+		sanitise_owner(p_duplicate_node, p_reference_node, p_duplicate_root, p_reference_root)
 	else:
 		p_duplicate_node.set_filename("")
-		sanitise_owner(p_duplicate_node, p_reference_node, p_duplicate_root)
+		sanitise_owner(p_duplicate_node, p_reference_node, p_duplicate_root, p_reference_root)
 			
 	return p_visited
 	
 func sanitise_owner(
 	p_duplicate_node: Node,
 	p_reference_node: Node,
-	p_duplicate_root: Node
+	p_duplicate_root: Node,
+	p_reference_root: Node
 	) -> void:
 	var reassign_owner: bool = false
 	
@@ -278,7 +280,14 @@ func sanitise_entity_children(
 	
 	###
 	if p_duplicate_root.is_inside_tree():
-		for _i in range(0, p_duplicate_node.get_child_count()):
+		for i in range(0, p_duplicate_node.get_child_count()):
+			var child_duplicate_node = p_duplicate_node.get_child(i)
+			var child_reference_node = null
+			
+			if p_reference_node:
+				if i < p_reference_node.get_child_count():
+					child_reference_node = p_reference_node.get_child(i)
+				
 			p_visited = sanitise_entity_children(p_duplicate_root, p_reference_root, p_table, p_visited, p_duplicate_node, p_reference_node, p_validator, p_entity_root)
 	
 	return p_visited
@@ -298,7 +307,7 @@ func sanitise_node(
 		p_duplicate_node = p_validator.sanitise_node(p_duplicate_node)
 	
 	p_visited = sanitise_object(p_duplicate_node, p_table, p_visited, p_duplicate_root, p_validator)
-	p_visited = sanitise_instance(p_duplicate_node, p_reference_node, p_duplicate_root, p_visited, p_validator)
+	p_visited = sanitise_instance(p_duplicate_node, p_reference_node, p_duplicate_root, p_reference_root, p_visited, p_validator)
 
 	# If this node is an entity, delete all the non-explicitly associated_nodes
 	if p_visited["entity_nodes"].has(p_duplicate_node):
@@ -550,10 +559,9 @@ static func evaluate_meta_spatial(p_root: Spatial, p_skeleton: Spatial, p_humano
 	
 static func _fix_humanoid_skeleton(
 	p_root: Node,
-	p_node: Node,\
-	p_ik_pose_fixer,
-	p_rotation_fixer,
-	p_external_transform_fixer) -> Dictionary:
+	p_node: Node) -> Dictionary:
+	print("_fix_humanoid_skeleton")
+		
 	var err: int = avatar_callback_const.generic_error_check(p_node, p_node._skeleton_node)
 	
 	var eye_head_id: int = -1
@@ -591,6 +599,11 @@ static func _fix_humanoid_skeleton(
 	
 			mouth_node.free()
 	
+	"""
+	TODO: create generic post-export plugin system
+	"""
+	
+	"""
 	var ik_pose_output: Dictionary = {}
 	if err == avatar_callback_const.AVATAR_OK:
 		if p_ik_pose_fixer:
@@ -604,6 +617,7 @@ static func _fix_humanoid_skeleton(
 	if err == avatar_callback_const.AVATAR_OK:
 		if p_external_transform_fixer:
 			err = p_external_transform_fixer.fix_external_transform(p_node, p_node._skeleton_node)
+	"""
 	
 	# Zero out the avatar node
 	p_node.transform = Transform()
@@ -648,12 +662,14 @@ static func convert_to_runtime_user_content(p_node: Node, p_script: Script) -> N
 			camera.get_parent().remove_child(camera)
 	
 	# Clear all the pipelines
-	for pipeline_path in p_node.get("vskeditor_pipeline_paths"):
-		if pipeline_path is NodePath:
-			var pipeline: Node = p_node.get_node_or_null(pipeline_path)
-			if pipeline is Node:
-				pipeline.queue_free()
-				pipeline.get_parent().remove_child(pipeline)
+	var pipeline_paths = p_node.get("vskeditor_pipeline_paths")
+	if pipeline_paths is Array:
+		for pipeline_path in pipeline_paths:
+			if pipeline_path is NodePath:
+				var pipeline: Node = p_node.get_node_or_null(pipeline_path)
+				if pipeline is Node:
+					pipeline.queue_free()
+					pipeline.get_parent().remove_child(pipeline)
 	
 	# Save all the properties
 	var property_list: Array = p_node.get_property_list()
@@ -679,10 +695,7 @@ Avatar
 """
 	
 func create_packed_scene_for_avatar(p_root: Node,\
-	p_node: Node,\
-	p_ik_pose_fixer,
-	p_rotation_fixer,
-	p_external_transform_fixer) -> Dictionary:
+	p_node: Node) -> Dictionary:
 	
 	var packed_scene_export: PackedScene = null
 	var err: int = avatar_callback_const.AVATAR_FAILED
@@ -702,19 +715,32 @@ func create_packed_scene_for_avatar(p_root: Node,\
 		if duplicate_node._skeleton_node and duplicate_node.humanoid_data:
 			has_humanoid_skeleton = true
 			
+		
 		if has_humanoid_skeleton:
-			var humanoid_skeleton_dict: Dictionary = _fix_humanoid_skeleton(p_root, duplicate_node, p_ik_pose_fixer, p_rotation_fixer, p_external_transform_fixer)
+			var humanoid_skeleton_dict: Dictionary = _fix_humanoid_skeleton(p_root, duplicate_node)
 			err = humanoid_skeleton_dict["err"]
 			duplicate_node = humanoid_skeleton_dict["node"]
+		else:
+			err = avatar_callback_const.AVATAR_OK
 		
 		if err == avatar_callback_const.AVATAR_OK:
-			#if bone_lib_const.rename_skeleton_to_humanoid_bones(duplicate_node._skeleton_node, duplicate_node.humanoid_data, skins):
-			
-			packed_scene_export = PackedScene.new()
-			
-			duplicate_node.set_name(p_node.get_name()) # Reset name
-			if packed_scene_export.pack(duplicate_node) == OK:
-				err = avatar_callback_const.AVATAR_OK
+			if has_humanoid_skeleton:
+				# Apply the avatar fixes
+				print("Applying avatar fixes")
+				
+				err = avatar_fixer_const.fix_avatar(
+					duplicate_node,
+					duplicate_node._skeleton_node,
+					duplicate_node.humanoid_data)
+				
+			if err == avatar_callback_const.AVATAR_OK:
+				#if bone_lib_const.rename_skeleton_to_humanoid_bones(duplicate_node._skeleton_node, duplicate_node.humanoid_data, skins):
+				
+				packed_scene_export = PackedScene.new()
+				
+				duplicate_node.set_name(p_node.get_name()) # Reset name
+				if packed_scene_export.pack(duplicate_node) == OK:
+					err = avatar_callback_const.AVATAR_OK
 	else:
 		err = avatar_callback_const.AVATAR_COULD_NOT_SANITISE
 	
@@ -727,17 +753,11 @@ func create_packed_scene_for_avatar(p_root: Node,\
 func export_avatar(\
 	p_root: Node,\
 	p_node: Node,\
-	p_path: String,\
-	p_ik_pose_fixer,
-	p_rotation_fixer,
-	p_external_transform_fixer) -> int:
+	p_path: String) -> int:
 	
 	# Create a packed scene
 	var packed_scene_dict: Dictionary = create_packed_scene_for_avatar(p_root,\
-	p_node,\
-	p_ik_pose_fixer,\
-	p_rotation_fixer,\
-	p_external_transform_fixer)
+	p_node)
 	
 	var err: int = packed_scene_dict["err"]
 	
@@ -758,7 +778,7 @@ func export_avatar(\
 Map
 """
 	
-func create_packed_scene_for_map(p_node: Node) -> Dictionary:
+func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 	var validator:validator_map_const = validator_map_const.new()
 		
 	print("Creating sanitised duplicate...")
@@ -780,7 +800,7 @@ func create_packed_scene_for_map(p_node: Node) -> Dictionary:
 		duplicate_node.map_resources = entity_resource_array
 
 		print("Add entity nodes to instance list...")
-		for _i in range(0, dictionary["entity_nodes"].size()):
+		for i in range(0, dictionary["entity_nodes"].size()):
 			duplicate_node.entity_instance_list.push_back(map_definition_const.EntityInstance.new())
 			
 		print("Caching map resources...")
@@ -823,10 +843,10 @@ func create_packed_scene_for_map(p_node: Node) -> Dictionary:
 
 	return {"packed_scene":packed_scene_export, "err":err}
 		
-func export_map(p_node: Node, p_path: String) -> void:
+func export_map(p_root: Node, p_node: Node, p_path: String) -> void:
 	print("Exporting map...")
 	
-	var packed_scene_dict: Dictionary = create_packed_scene_for_map(p_node)
+	var packed_scene_dict: Dictionary = create_packed_scene_for_map(p_root, p_node)
 	
 	var err: int  = packed_scene_dict["err"]
 	
@@ -865,10 +885,7 @@ func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: 
 	match p_upload_data["user_content_type"]:
 		vsk_types_const.UserContentType.Avatar:
 			var packed_scene_dict: Dictionary = create_packed_scene_for_avatar(root,\
-			node,\
-			ik_pose_fixer,\
-			rotation_fixer,\
-			external_transform_fixer)
+			node)
 			
 			var err: int = packed_scene_dict["err"]
 			
@@ -879,7 +896,8 @@ func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: 
 			else:
 				p_callbacks["packed_scene_creation_failed"].call_func("Avatar export failed!")
 		vsk_types_const.UserContentType.Map:
-			var packed_scene_dict: Dictionary = create_packed_scene_for_map(node)
+			var packed_scene_dict: Dictionary = create_packed_scene_for_map(root,\
+			node)
 			
 			var err: int = packed_scene_dict["err"]
 			
