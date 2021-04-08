@@ -800,7 +800,7 @@ func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 		duplicate_node.map_resources = entity_resource_array
 
 		print("Add entity nodes to instance list...")
-		for i in range(0, dictionary["entity_nodes"].size()):
+		for _i in range(0, dictionary["entity_nodes"].size()):
 			duplicate_node.entity_instance_list.push_back(map_definition_const.EntityInstance.new())
 			
 		print("Caching map resources...")
@@ -876,9 +876,6 @@ func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: 
 
 	var root: Node = export_data["root"]
 	var node: Node = export_data["node"]
-	var ik_pose_fixer: Reference = export_data.get("ik_pose_fixer")
-	var rotation_fixer: Reference = export_data.get("rotation_fixer")
-	var external_transform_fixer: Reference = export_data.get("external_transform_fixer")
 		
 	var packed_scene: PackedScene = null
 	
