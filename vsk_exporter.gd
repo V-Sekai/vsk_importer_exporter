@@ -1,6 +1,8 @@
 tool
 extends Node
 
+var vsk_editor: Node = null
+
 var file_save_path: String = ""
 
 var save_dialog: FileDialog = null
@@ -843,7 +845,7 @@ func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 
 	return {"packed_scene":packed_scene_export, "err":err}
 		
-func export_map(p_root: Node, p_node: Node, p_path: String) -> void:
+func export_map(p_root: Node, p_node: Node, p_path: String) -> int:
 	print("Exporting map...")
 	
 	var packed_scene_dict: Dictionary = create_packed_scene_for_map(p_root, p_node)
@@ -860,6 +862,8 @@ func export_map(p_root: Node, p_node: Node, p_path: String) -> void:
 			print("---Map exported failed!---")
 	else:
 		print("---Map exported failed!---")
+		
+	return err
 
 """
 Online submission
@@ -928,12 +932,49 @@ func create_temp_folder() -> int:
 			
 	return err
 
+"""
+Linking
+"""
+	
+func _link_vsk_editor(p_node: Node) -> void:
+	print("_link_vsk_editor")
+	vsk_editor = p_node
+
+	if vsk_editor:
+		if vsk_editor.connect("user_content_submission_requested", self, "_user_content_submission_requested", [], CONNECT_DEFERRED) != OK:
+			printerr("Could not connect signal 'user_content_submission_requested'")
+		if vsk_editor.connect("user_content_submission_cancelled", self, "_user_content_submission_cancelled", [], CONNECT_DEFERRED) != OK:
+			printerr("Could not connect signal 'user_content_submission_cancelled'")
+	
+func _unlink_vsk_editor() -> void:
+	print("_unlink_vsk_editor")
+	
+	vsk_editor.disconnect("user_content_submission_requested", self, "_user_content_submission_requested")
+	vsk_editor.disconnect("user_content_submission_cancelled", self, "_user_content_submission_cancelled")
+	
+	vsk_editor = null
+	
+func _node_added(p_node: Node) -> void:
+	var parent_node: Node = p_node.get_parent()
+	if parent_node:
+		if !parent_node.get_parent():
+			if p_node.get_name() == "VSKEditor":
+				_link_vsk_editor(p_node)
+			
+func _node_removed(p_node: Node) -> void:
+	if p_node == vsk_editor:
+		_unlink_vsk_editor()
+		
+"""
+
+"""
+
 func _ready():
 	if Engine.is_editor_hint():
-		if VSKEditor.connect("user_content_submission_requested", self, "_user_content_submission_requested", [], CONNECT_DEFERRED) != OK:
-			printerr("Could not connect signal 'user_content_submission_requested'")
-		if VSKEditor.connect("user_content_submission_cancelled", self, "_user_content_submission_cancelled", [], CONNECT_DEFERRED) != OK:
-			printerr("Could not connect signal 'user_content_submission_cancelled'")
+		assert(get_tree().connect("node_added", self, "_node_added") == OK)
+		assert(get_tree().connect("node_removed", self, "_node_removed") == OK)
+		
+		_link_vsk_editor(get_node_or_null("/root/VSKEditor"))
 		
 		if create_temp_folder() != OK:
 			printerr("Could not create temp folder")
