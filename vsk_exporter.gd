@@ -278,7 +278,8 @@ func sanitise_entity_children(
 			p_visited = sanitise_node(p_duplicate_node, p_reference_node, p_table, p_visited, p_duplicate_root, p_reference_root, p_validator)
 		else:
 			p_duplicate_root.queue_free()
-			p_duplicate_root.get_parent().remove_child(p_duplicate_root)
+			if p_duplicate_root.get_parent():
+				p_duplicate_root.get_parent().remove_child(p_duplicate_root)
 	
 	###
 	if p_duplicate_root.is_inside_tree():
