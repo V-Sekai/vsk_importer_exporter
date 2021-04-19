@@ -57,3 +57,6 @@ func sanitise_node(p_node: Node) -> Node:
 	p_node = new_node
 	
 	return p_node
+	
+func get_name() -> String:
+	return "UnknownValidator"

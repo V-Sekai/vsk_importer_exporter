@@ -9,9 +9,13 @@ var save_dialog: FileDialog = null
 var current_scene_root: Node = null
 var user_content_submission_cancelled: bool = false
 
+var vsk_exporter_addon_interface: Reference = vsk_exporter_addon_interface_const.new()
+
 const EXPORT_FLAGS = ResourceSaver.FLAG_COMPRESS | ResourceSaver.FLAG_OMIT_EDITOR_PROPERTIES
 
 const vsk_types_const = preload("vsk_types.gd")
+
+const vsk_exporter_addon_interface_const = preload("vsk_exporter_addon_interface.gd")
 
 const avatar_definition_const = preload("res://addons/vsk_avatar/vsk_avatar_definition.gd")
 const avatar_definition_runtime_const = preload("res://addons/vsk_avatar/vsk_avatar_definition_runtime.gd")
@@ -520,8 +524,12 @@ func create_object_duplication_table_for_node(
 
 
 func create_sanitised_duplication(p_node: Node, p_validator: Reference) -> Dictionary:
-	var reference_node: Node = p_node
-	var duplicate_node: Node = p_node.duplicate()
+	var reference_node: Node = p_node.duplicate()
+	
+	# Run any addons on a duplicate of the scene before anything else
+	reference_node = get_export_addon_interface().preprocess_scene(reference_node, p_validator)
+	
+	var duplicate_node: Node = reference_node.duplicate()
 
 	print("Creating duplication table...")
 	var duplication_table: Dictionary = create_object_duplication_table_for_node(
@@ -537,6 +545,8 @@ func create_sanitised_duplication(p_node: Node, p_validator: Reference) -> Dicti
 	visited = sanitise_node(duplicate_node, reference_node, duplication_table, visited, duplicate_node, reference_node, p_validator)
 		
 	print("Node sanitisation complete!")
+		
+	reference_node.queue_free()
 		
 	return {"node":duplicate_node, "entity_nodes":visited["entity_nodes"]}
 
@@ -932,6 +942,9 @@ func create_temp_folder() -> int:
 			print("Created temp directory!")
 			
 	return err
+	
+func get_export_addon_interface() -> Reference:
+	return vsk_exporter_addon_interface
 
 """
 Linking

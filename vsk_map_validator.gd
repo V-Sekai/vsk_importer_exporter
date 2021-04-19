@@ -180,3 +180,6 @@ func is_valid_entity_script(p_script : Script) -> bool:
 		return true
 		
 	return false
+
+func get_name() -> String:
+	return "MapValidator"

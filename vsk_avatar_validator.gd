@@ -155,3 +155,6 @@ func is_resource_type_valid(p_resource : Resource) -> bool:
 	if valid_resource_whitelist.has(p_resource.get_class()):
 		return true
 	return false
+
+func get_name() -> String:
+	return "AvatarValidator"
