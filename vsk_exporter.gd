@@ -17,6 +17,7 @@ const vsk_types_const = preload("vsk_types.gd")
 
 const vsk_exporter_addon_interface_const = preload("vsk_exporter_addon_interface.gd")
 
+const avatar_lib_const = preload("res://addons/vsk_avatar/avatar_lib.gd")
 const avatar_definition_const = preload("res://addons/vsk_avatar/vsk_avatar_definition.gd")
 const avatar_definition_runtime_const = preload("res://addons/vsk_avatar/vsk_avatar_definition_runtime.gd")
 
@@ -747,13 +748,22 @@ func create_packed_scene_for_avatar(p_root: Node,\
 					duplicate_node.humanoid_data)
 				
 			if err == avatar_callback_const.AVATAR_OK:
-				#if bone_lib_const.rename_skeleton_to_humanoid_bones(duplicate_node._skeleton_node, duplicate_node.humanoid_data, skins):
+				var mesh_instances: Array = avatar_lib_const.find_mesh_instances_for_avatar_skeleton(p_root, p_root._skeleton_node, [])
+				var skins: Array = []
 				
-				packed_scene_export = PackedScene.new()
-				
-				duplicate_node.set_name(p_node.get_name()) # Reset name
-				if packed_scene_export.pack(duplicate_node) == OK:
-					err = avatar_callback_const.AVATAR_OK
+				for mesh_instance in mesh_instances:
+					if mesh_instance.skin:
+						skins.push_back(mesh_instance.skin.duplicate())
+						
+					else:
+						skins.push_back(null)
+						
+				if bone_lib_const.rename_skeleton_to_humanoid_bones(duplicate_node._skeleton_node, duplicate_node.humanoid_data, skins):
+					packed_scene_export = PackedScene.new()
+					
+					duplicate_node.set_name(p_node.get_name()) # Reset name
+					if packed_scene_export.pack(duplicate_node) == OK:
+						err = avatar_callback_const.AVATAR_OK
 	else:
 		err = avatar_callback_const.AVATAR_COULD_NOT_SANITISE
 	
@@ -775,8 +785,6 @@ func export_avatar(\
 	var err: int = packed_scene_dict["err"]
 	
 	if err == avatar_callback_const.AVATAR_OK:
-		#if bone_lib_const.rename_skeleton_to_humanoid_bones(duplicate_node._skeleton_node, duplicate_node.humanoid_data, skins):
-		
 		err = save_user_content_resource(p_path, packed_scene_dict["packed_scene"])
 		if err == OK:
 			print("---Avatar exported successfully!---")
