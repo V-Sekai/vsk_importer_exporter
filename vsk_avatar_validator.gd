@@ -10,6 +10,8 @@ const avatar_physics_const = preload("res://addons/vsk_avatar/avatar_physics.gd"
 const avatar_collidergroup_const = preload("res://addons/vsk_avatar/physics/avatar_collidergroup.gd")
 const avatar_springbone_const = preload("res://addons/vsk_avatar/physics/avatar_springbone.gd")
 
+const vsk_pipeline_const = preload("res://addons/vsk_importer_exporter/vsk_pipeline.gd")
+
 const valid_node_whitelist = {
 	"AnimatedSprite3D": AnimatedSprite3D,
 	"Area": Area,
@@ -32,6 +34,7 @@ const valid_node_whitelist = {
 	"MultiMeshInstance": MultiMeshInstance,
 	"Navigation": Navigation,
 	"NavigationMeshInstance": NavigationMeshInstance,
+	"Node":Node,
 	"OmniLight": OmniLight,
 	"Particles": Particles,
 	"Path": Path,
@@ -109,7 +112,7 @@ const valid_root_script_whitelist = [
 	]
 
 const valid_children_script_whitelist = [
-	avatar_physics_const
+	avatar_physics_const,
 ]
 
 const valid_resource_script_whitelist = [
@@ -117,24 +120,40 @@ const valid_resource_script_whitelist = [
 	avatar_collidergroup_const,
 	avatar_springbone_const
 	]
+	
+const script_type_table = {
+	avatar_physics_const: ["Position3D", "Spatial"],
+	avatar_definition_const: ["Position3D", "Spatial"],
+	avatar_definition_runtime_const: ["Position3D", "Spatial"],
+	vsk_pipeline_const: ["Node"]
+}
 
-func is_script_valid_for_root(p_script: Script):
+static func check_if_script_type_is_valid(p_script: Script, p_node_class: String) -> bool:
+	if script_type_table.get(p_script) != null:
+		var valid_classes: Array = script_type_table.get(p_script)
+		for class_str in valid_classes:
+			if class_str == p_node_class:
+				return true
+				
+	return false
+
+func is_script_valid_for_root(p_script: Script, p_node_class: String):
 	if p_script == null:
 		return true
 	
 	if valid_root_script_whitelist.find(p_script) != -1:
-		return true
-	else:
-		return false
+		return check_if_script_type_is_valid(p_script, p_node_class)
+		
+	return false
 
-func is_script_valid_for_children(p_script: Script):
+func is_script_valid_for_children(p_script: Script, p_node_class: String):
 	if p_script == null:
 		return true
 	
 	if valid_children_script_whitelist.find(p_script) != -1:
-		return true
-	else:
-		return false
+		return check_if_script_type_is_valid(p_script, p_node_class)
+				
+	return false
 
 func is_script_valid_for_resource(p_script: Script):
 	if p_script == null:
@@ -145,10 +164,17 @@ func is_script_valid_for_resource(p_script: Script):
 	else:
 		return false
 
-func is_node_type_valid(p_node : Node) -> bool:
+func is_node_type_valid(p_node : Node, p_child_of_canvas: bool) -> bool:
 	if valid_node_whitelist.has(p_node.get_class()):
 		if !is_editor_only(p_node):
 			return true
+	return false
+	
+func is_node_type_string_valid(p_class_str: String, p_child_of_canvas: bool) -> bool:
+	if p_child_of_canvas:
+		return false
+	else:
+		return valid_node_whitelist.has(p_class_str)
 	return false
 
 func is_resource_type_valid(p_resource : Resource) -> bool:

@@ -1,6 +1,21 @@
 tool
 extends Reference
 
+static func check_basic_node_3d_value_targets(p_subnames: String) -> bool:
+	match p_subnames:
+		"translation":
+			return true
+		"rotation_degrees":
+			return true
+		"scale":
+			return true
+		"transform":
+			return true
+		"visibility":
+			return true
+			
+	return false
+
 static func is_editor_only(p_node: Node) -> bool:
 	if p_node is Light:
 		if p_node.editor_only:
@@ -8,40 +23,52 @@ static func is_editor_only(p_node: Node) -> bool:
 			
 	return false
 
-func is_scene_valid_for_root(p_script: Script):
+func is_scene_valid_for_root(p_script: Script) -> bool:
 	if p_script == null:
 		return true
 	else:
 		return false
 
-func is_script_valid_for_root(p_script: Script):
+func is_script_valid_for_root(p_script: Script, p_node_class: String) -> bool:
 	if p_script == null:
 		return true
 	else:
 		return false
 
-func is_script_valid_for_children(p_script: Script):
+func is_script_valid_for_children(p_script: Script, p_node_class: String) -> bool:
 	if p_script == null:
 		return true
 	else:
 		return false
 
-func is_script_valid_for_resource(p_script: Script):
+func is_script_valid_for_resource(p_script: Script) -> bool:
 	if p_script == null:
 		return true
 	else:
 		return false
 
-func is_node_type_valid(_node : Node) -> bool:
+func is_node_type_valid(_node: Node, _child_of_canvas: bool) -> bool:
 	return false
 
-func is_resource_type_valid(_resource : Resource) -> bool:
+func is_node_type_string_valid(_class_str: String, _child_of_canvas: bool) -> bool:
 	return false
 
-func is_path_an_entity(_packed_scene_path : String) -> bool:
+func is_resource_type_valid(_resource: Resource) -> bool:
+	return false
+
+func is_path_an_entity(_packed_scene_path: String) -> bool:
 	return false
 	
-func is_valid_entity_script(_script : Script) -> bool:
+func is_valid_entity_script(_script: Script) -> bool:
+	return false
+	
+func is_valid_canvas_3d(_script: Script, _node_class: String) -> bool:
+	return false
+
+func is_valid_canvas_3d_anchor(_script: Script, _node_class: String) -> bool:
+	return false
+
+func validate_value_track(_subnames: String, _node_class: String):
 	return false
 
 func sanitise_node(p_node: Node) -> Node:

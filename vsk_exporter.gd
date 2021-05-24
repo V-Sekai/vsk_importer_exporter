@@ -63,13 +63,20 @@ func find_entity_id_from_filenames(p_filenames: Array):
 	
 	return -1
 	
-func is_valid_entity(p_node: Node, p_validator: Reference) -> bool:
+func assign_filename_for_entity_id(p_node: Node, p_entity_id: int) -> void:
+	var networked_scenes:Array = []
+	if ProjectSettings.has_setting("network/config/networked_scenes"):
+		networked_scenes = ProjectSettings.get_setting("network/config/networked_scenes")
+		
+	p_node.set_filename(networked_scenes[p_entity_id])
+	
+func get_valid_entity_id(p_node: Node, p_validator: Reference) -> int:
 	var valid_filenames: Array = get_valid_filenames(p_node.get_filename(), p_validator, [])
 	var entity_id: int = find_entity_id_from_filenames(valid_filenames)
-	if entity_id != -1:
-		return true
-		
-	return false
+	return entity_id
+	
+func is_valid_entity(p_node: Node, p_validator: Reference) -> bool:
+	return get_valid_entity_id(p_node, p_validator) >= 0
 
 func sanitise_array(p_array: Array, p_table: Dictionary, p_visited: Dictionary, p_root: Node, p_validator: Reference) -> Dictionary:
 	var new_array = []
@@ -178,14 +185,14 @@ func sanitise_object(p_object: Object, p_table: Dictionary, p_visited: Dictionar
 								if p_object is Node:
 									# Check if the script works in this node's context
 									if p_object == p_root:
-										if ! p_validator.is_script_valid_for_root(subobject):
+										if ! p_validator.is_script_valid_for_root(subobject, p_object.get_class()):
 											duplicated_subobject = null
 									else:
 										if is_valid_entity(p_object, p_validator):
 											if ! p_validator.is_valid_entity_script(subobject):
 												duplicated_subobject = null
 										else:
-											if ! p_validator.is_script_valid_for_children(subobject):
+											if ! p_validator.is_script_valid_for_children(subobject, p_object.get_class()):
 												duplicated_subobject = null
 												
 							elif subobject is Resource:
@@ -227,6 +234,11 @@ func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplica
 		if is_valid_entity(p_duplicate_node, p_validator):
 			p_duplicate_node.clear_entity_signal_connections()
 			
+			# Assign correct entity filename
+			var entity_id: int = get_valid_entity_id(p_duplicate_node, p_validator)
+			if entity_id >= 0:
+				assign_filename_for_entity_id(p_duplicate_node, entity_id)
+			
 			# Add it to the list
 			p_visited["entity_nodes"].push_back(p_duplicate_node)
 			# Scan through all the children
@@ -240,6 +252,9 @@ func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplica
 					
 				if is_valid_entity(child_duplicate_node, p_validator):
 					sanitise_owner(child_duplicate_node, child_reference_node, p_duplicate_root, p_reference_root)
+					entity_id = get_valid_entity_id(child_duplicate_node, p_validator)
+					if entity_id >= 0:
+						assign_filename_for_entity_id(child_duplicate_node, entity_id)
 				else:
 					child_duplicate_node.set_filename("")
 		else:
@@ -311,7 +326,7 @@ func sanitise_node(
 	) -> Dictionary:
 	print("Sanitising node '%s'" % p_duplicate_root.get_path_to(p_duplicate_node))
 	
-	if ! p_validator.is_node_type_valid(p_duplicate_node):
+	if ! p_validator.is_node_type_valid(p_duplicate_node, false):
 		p_duplicate_node = p_validator.sanitise_node(p_duplicate_node)
 	
 	p_visited = sanitise_object(p_duplicate_node, p_table, p_visited, p_duplicate_root, p_validator)
@@ -483,7 +498,7 @@ func create_object_duplication_table_for_object(
 						if subobject is Script:
 							if p_object is Node:
 								if p_object == p_root:
-									if ! p_validator.is_script_valid_for_root(subobject):
+									if ! p_validator.is_script_valid_for_root(subobject, p_object.get_class()):
 										p_table[subobject] = null
 									else:
 										print("Valid script!")
@@ -494,7 +509,7 @@ func create_object_duplication_table_for_object(
 										else:
 											print("Valid entity script!")
 									else:
-										if ! p_validator.is_script_valid_for_children(subobject):
+										if ! p_validator.is_script_valid_for_children(subobject, p_object.get_class()):
 											p_table[subobject] = null
 										else:
 											print("Valid script!")
