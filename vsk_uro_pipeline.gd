@@ -1,6 +1,6 @@
-extends "vsk_pipeline.gd"
+extends "res://addons/vsk_importer_exporter/vsk_pipeline.gd" # vsk_pipeline.gd
 
-export(String) var database_id: String = ""
+@export var database_id: String # (String) = ""
 
 func _init(p_database_id: String):
 	database_id = p_database_id

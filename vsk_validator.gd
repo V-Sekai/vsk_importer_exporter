@@ -1,9 +1,9 @@
-tool
-extends Reference
+@tool
+extends RefCounted
 
 static func check_basic_node_3d_value_targets(p_subnames: String) -> bool:
 	match p_subnames:
-		"translation":
+		"position":
 			return true
 		"rotation_degrees":
 			return true
@@ -17,7 +17,7 @@ static func check_basic_node_3d_value_targets(p_subnames: String) -> bool:
 	return false
 
 static func is_editor_only(p_node: Node) -> bool:
-	if p_node is Light:
+	if p_node is Light3D:
 		if p_node.editor_only:
 			return true
 			
@@ -74,8 +74,8 @@ func validate_value_track(_subnames: String, _node_class: String):
 func sanitise_node(p_node: Node) -> Node:
 	var node_name: String = p_node.get_name()
 	var new_node: Node = null
-	if p_node is Spatial:
-		new_node = Spatial.new()
+	if p_node is Node3D:
+		new_node = Node3D.new()
 	else:
 		new_node = Node.new()
 		

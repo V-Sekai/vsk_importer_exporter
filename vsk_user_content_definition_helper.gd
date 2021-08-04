@@ -1,4 +1,4 @@
-tool
+@tool
 
 enum UserContentFormat {
 	PORTABLE, # Non-native textures, compatible everywhere
@@ -6,10 +6,10 @@ enum UserContentFormat {
 	MOBILE # Mobile class hardware, PVR compression, S3TC/ETC/2
 }
 
-class VSKEditorProperties extends Reference:
-	var vskeditor_preview_type: String = "Camera"
+class VSKEditorProperties extends RefCounted:
+	var vskeditor_preview_type: String = "Camera3D"
 	var vskeditor_preview_camera_path: NodePath = NodePath()
-	var vskeditor_preview_texture: Texture = null
+	var vskeditor_preview_texture: Texture2D = null
 	var vskeditor_pipeline_paths: Array = []
 
 static func common_set(p_node: Node, p_property, p_value) -> bool:

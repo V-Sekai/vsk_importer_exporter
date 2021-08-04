@@ -1,4 +1,4 @@
-tool
+@tool
 extends Node
 
 const validator_const = preload("vsk_validator.gd")
@@ -13,28 +13,28 @@ const TYPE_INSTANCE = 0x7fffffff
 const FLAG_INSTANCE_IS_PLACEHOLDER = (1 << 30)
 const FLAG_MASK = (1 << 24) - 1
 
-enum ImporterResult {
-	OK,
-	FAILED,
-	NULL_PACKED_SCENE,
-	READ_FAIL,
-	HAS_NODE_GROUPS,
-	FAILED_TO_CREATE_TREE,
-	INVALID_ENTITY_PATH,
-	UNSAFE_NODEPATH,
-	SCRIPT_ON_INSTANCE_NODE,
-	INVALID_ROOT_SCRIPT,
-	INVALID_CHILD_SCRIPT,
-	RECURSIVE_CANVAS,
-	INVALID_NODE_CLASS,
-	INVALID_ANIMATION_PLAYER_ROOT,
-	INVALID_METHOD_TRACK,
-	INVALID_VALUE_TRACK,
-	INVALID_TRACK_PATH,
-}
+class  ImporterResult :
+	const OK=0
+	const FAILED=1
+	const NULL_PACKED_SCENE=2
+	const READ_FAIL=3
+	const HAS_NODE_GROUPS=4
+	const FAILED_TO_CREATE_TREE=5
+	const INVALID_ENTITY_PATH=6
+	const UNSAFE_NODEPATH=7
+	const SCRIPT_ON_INSTANCE_NODE=8
+	const INVALID_ROOT_SCRIPT=9
+	const INVALID_CHILD_SCRIPT=10
+	const RECURSIVE_CANVAS=11
+	const INVALID_NODE_CLASS=12
+	const INVALID_ANIMATION_PLAYER_ROOT=13
+	const INVALID_METHOD_TRACK=14
+	const INVALID_VALUE_TRACK=15
+	const INVALID_TRACK_PATH=16
+
 
 class RefNode:
-	extends Reference
+	extends RefCounted
 	var id: int = -1
 	var name: String = ""
 	var properties: Array = []
@@ -45,7 +45,7 @@ class RefNode:
 
 
 class NodeData:
-	extends Reference
+	extends RefCounted
 	var parent_id: int = -1
 	var owner_id: int = -1
 	var type_id: int = -1
@@ -57,14 +57,14 @@ class NodeData:
 
 # This function attempts to walk the RefTree to make sure a nodepath is not
 # breaking out of the sandbox
-static func get_ref_node_from_relative_path(p_node: RefNode, p_path: NodePath) -> RefNode:
+static func get_ref_node_from_relative_path(p_node: RefNode, p_path: NodePath):
 	var nodepath: NodePath = p_path
 	
+	var root: RefNode = null
 	if nodepath.is_empty() or nodepath.is_absolute():
-		return null
+		return root
 		
 	var current: RefNode = p_node
-	var root: RefNode = null
 	
 	for i in range(0, nodepath.get_name_count()):
 		var name: String = nodepath.get_name(i)
@@ -94,13 +94,13 @@ static func get_ref_node_from_relative_path(p_node: RefNode, p_path: NodePath) -
 
 	return current
 
-enum RefNodeType {
-	OTHER,
-	ANIMATION_PLAYER,
-	MESH_INSTANCE,
-}
+class  RefNodeType :
+	const OTHER=0
+	const ANIMATION_PLAYER=1
+	const MESH_INSTANCE=2
 
-static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validator: validator_const) -> int:
+
+static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validator: RefCounted) -> int: # validator_const
 	# Special-case handling code for animation players
 	var ref_node_type: int = RefNodeType.OTHER
 	var skip_type_check: bool = false
@@ -215,11 +215,11 @@ static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validato
 # Build a node tree of RefNodes and return the root
 static func build_ref_node_tree(
 	p_node_data_array: Array,
-	p_names: PoolStringArray,
+	p_names: PackedStringArray,
 	p_variants: Array,
-	p_node_paths: PoolStringArray,
+	p_node_paths: PackedStringArray,
 	p_editable_instances: Array
-) -> RefNode:
+):
 	var root_ref_node: RefNode = null
 	var ref_nodes: Array = []
 	
@@ -285,7 +285,7 @@ static func build_ref_node_tree(
 	return root_ref_node
 
 # Read the next integer in the array and increment the internal IDX
-static func reader_snode(p_snodes: PoolIntArray, p_reader: Dictionary) -> Dictionary:
+static func reader_snode(p_snodes: PackedInt64Array, p_reader: Dictionary) -> Dictionary:
 	if p_reader.idx < p_snodes.size() and p_reader.idx >= 0:
 		p_reader.result = p_snodes[p_reader.idx]
 		p_reader.idx += 1
@@ -298,8 +298,8 @@ static func reader_snode(p_snodes: PoolIntArray, p_reader: Dictionary) -> Dictio
 
 static func sanitise_packed_scene(
 	p_packed_scene: PackedScene,
-	p_validator: validator_const
-	) -> Dictionary:
+	p_validator: RefCounted
+	) -> Dictionary: # validator_const
 
 	if p_packed_scene == null:
 		return {"packed_scene":null, "result":ImporterResult.NULL_PACKED_SCENE}
@@ -311,7 +311,7 @@ static func sanitise_packed_scene(
 	var node_count: int = packed_scene_bundle["node_count"]
 
 	if node_count > 0:
-		var snodes: PoolIntArray = packed_scene_bundle["nodes"]
+		var snodes: PackedInt64Array = packed_scene_bundle["nodes"]
 		var snode_reader = {"idx": 0, "result": -1}
 		for _i in range(0, node_count):
 			var nd = NodeData.new()
@@ -439,7 +439,7 @@ static func sanitise_packed_scene_for_map(p_packed_scene: PackedScene) -> Dictio
 
 func sanitise_packed_scene_for_avatar(p_packed_scene: PackedScene) -> Dictionary:
 	print("Sanitising avatar...")
-	var validator: validator_avatar_const = validator_avatar_const.new()
+	var validator = validator_avatar_const.new()
 	return sanitise_packed_scene(p_packed_scene, validator)
 	
 	return {"packed_scene":p_packed_scene, "result":ImporterResult.OK}

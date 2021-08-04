@@ -1,6 +1,6 @@
-extends Reference
+extends RefCounted
 
-enum UserContentType {
-	Avatar,
-	Map
-}
+class  UserContentType :
+	const Avatar=0
+	const Map=1
+

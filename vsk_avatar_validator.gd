@@ -1,5 +1,5 @@
-tool
-extends "vsk_validator.gd"
+@tool
+extends "res://addons/vsk_importer_exporter/vsk_validator.gd" # vsk_validator.gd
 
 const humanoid_data_const = preload("res://addons/vsk_avatar/humanoid_data.gd")
 const avatar_definition_const = preload("res://addons/vsk_avatar/vsk_avatar_definition.gd")
@@ -12,96 +12,101 @@ const avatar_springbone_const = preload("res://addons/vsk_avatar/physics/avatar_
 
 const vsk_pipeline_const = preload("res://addons/vsk_importer_exporter/vsk_pipeline.gd")
 
-const valid_node_whitelist = {
+# FIXME: dictionary cannot be const????
+var valid_node_whitelist = {
 	"AnimatedSprite3D": AnimatedSprite3D,
-	"Area": Area,
+	"Area3D": Area3D,
 	"AudioStreamPlayer": AudioStreamPlayer,
 	"AudioStreamPlayer3D": AudioStreamPlayer3D,
-	"BoneAttachment": BoneAttachment,
-	"Camera": Camera,
-	"CollisionObject": CollisionObject,
-	"CollisionShape": CollisionShape,
-	"ConeTwistJoint": ConeTwistJoint,
-	"CPUParticles": CPUParticles,
+	"BoneAttachment3D": BoneAttachment3D,
+	"Camera3D": Camera3D,
+	"CollisionObject3D": CollisionObject3D,
+	"CollisionShape3D": CollisionShape3D,
+	"ConeTwistJoint3D": ConeTwistJoint3D,
+	"CPUParticles3D": CPUParticles3D,
 	"GridMap": GridMap,
-	"GeometryInstance": GeometryInstance,
-	"Generic6DOFJoint": Generic6DOFJoint,
-	"HingeJoint": HingeJoint,
-	"Joint": Joint,
-	"KinematicBody": KinematicBody,
-	"Light": Light,
-	"MeshInstance": MeshInstance,
-	"MultiMeshInstance": MultiMeshInstance,
-	"Navigation": Navigation,
-	"NavigationMeshInstance": NavigationMeshInstance,
+	"GeometryInstance3D": GeometryInstance3D,
+	"Generic6DOFJoint3D": Generic6DOFJoint3D,
+	"HingeJoint3D": HingeJoint3D,
+	"Joint3D": Joint3D,
+	"CharacterBody3D": CharacterBody3D,
+	"Light3D": Light3D,
+	"MeshInstance3D": MeshInstance3D,
+	"MultiMeshInstance3D": MultiMeshInstance3D,
+	"NavigationAgent3D": NavigationAgent3D,
+	"NavigationRegion3D": NavigationRegion3D,
 	"Node":Node,
-	"OmniLight": OmniLight,
-	"Particles": Particles,
-	"Path": Path,
-	"PathFollow": PathFollow,
-	"PhysicsBody": PhysicsBody,
-	"PinJoint": PinJoint,
+	"OmniLight3D": OmniLight3D,
+	"GPUParticles3D": GPUParticles3D,
+	"Path3D": Path3D,
+	"PathFollow3D": PathFollow3D,
+	"PhysicsBody3D": PhysicsBody3D,
+	"PinJoint3D": PinJoint3D,
 	"Position3D": Position3D,
-	"ProximityGroup": ProximityGroup,
-	"RayCast": RayCast,
-	"RigidBody": RigidBody,
-	"RemoteTransform": RemoteTransform,
-	"SliderJoint": SliderJoint,
-	"Skeleton": Skeleton,
-	"Spatial": Spatial,
-	"SpotLight": SpotLight,
-	"SpringArm": SpringArm,
+	"ProximityGroup3D": ProximityGroup3D,
+	"RayCast3D": RayCast3D,
+	"RigidBody3D": RigidBody3D,
+	"RemoteTransform3D": RemoteTransform3D,
+	"SliderJoint3D": SliderJoint3D,
+	"Skeleton3D": Skeleton3D,
+	"Node3D": Node3D,
+	"SpotLight3D": SpotLight3D,
+	"SpringArm3D": SpringArm3D,
 	"Sprite3D": Sprite3D,
 	"SpriteBase3D": SpriteBase3D,
-	"StaticBody": StaticBody,
-	"VisualInstance": VisualInstance,
+	"StaticBody3D": StaticBody3D,
+	"VisualInstance3D": VisualInstance3D,
 	"WorldEnvironment": WorldEnvironment,
 }
 
-const valid_resource_whitelist = {
+# FIXME: dictionary cannot be const????
+var valid_resource_whitelist = {
 	"AnimatedTexture": AnimatedTexture,
 	"ArrayMesh": ArrayMesh,
 	"AtlasTexture": AtlasTexture,
-	"BoxShape": BoxShape,
+	"BoxShape3D": BoxShape3D,
 	"CapsuleMesh": CapsuleMesh,
-	"CapsuleShape": CapsuleShape,
-	"ConcavePolygonShape": ConcavePolygonShape,
-	"ConvexPolygonShape": ConvexPolygonShape,
-	"CubeMesh": CubeMesh,
+	"CapsuleShape3D": CapsuleShape3D,
+	"ConcavePolygonShape3D": ConcavePolygonShape3D,
+	"ConvexPolygonShape3D": ConvexPolygonShape3D,
+	"BoxMesh": BoxMesh,
 	"CurveTexture": CurveTexture,
 	"CylinderMesh": CylinderMesh,
-	"CylinderShape": CylinderShape,
+	"CylinderShape3D": CylinderShape3D,
 	"Environment": Environment,
 	"GradientTexture": GradientTexture,
-	"HeightMapShape": HeightMapShape,
+	"HeightMapShape3D": HeightMapShape3D,
 	"ImageTexture": ImageTexture,
-	"LargeTexture": LargeTexture,
+	# "LargeTexture": LargeTexture, # Obsolete as of Godot 4.x
 	"Mesh": Mesh,
 	"MeshLibrary": MeshLibrary,
 	"MeshTexture": MeshTexture,
 	"NoiseTexture": NoiseTexture,
-	"PanoramaSky": PanoramaSky,
+	"PanoramaSkyMaterial": PanoramaSkyMaterial,
+	"PhysicalSkyMaterial": PhysicalSkyMaterial,
+	"ProceduralSkyMaterial": ProceduralSkyMaterial,
 	"PhysicsMaterial": PhysicsMaterial,
 	"PlaneMesh": PlaneMesh,
-	"PlaneShape": PlaneShape,
+	"WorldMarginShape3D": WorldMarginShape3D,
 	"PointMesh": PointMesh,
 	"PrimitiveMesh": PrimitiveMesh,
 	"PrismMesh": PrismMesh,
-	"ProceduralSky": ProceduralSky,
 	"ProxyTexture": ProxyTexture,
-	"RayShape": RayShape,
+	"RayShape3D": RayShape3D,
 	"QuadMesh": QuadMesh,
 	"Resource": Resource,
 	"Shader": Shader,
 	"ShaderMaterial": ShaderMaterial,
-	"Shape": Shape,
+	"Shape3D": Shape3D,
 	"Skin": Skin,
 	"Sky": Sky,
-	"SpatialMaterial": SpatialMaterial,
+	"StandardMaterial3D": StandardMaterial3D,
 	"SphereMesh": SphereMesh,
-	"SphereShape": SphereShape,
-	"StreamTexture": StreamTexture,
-	"Texture": Texture,
+	"SphereShape3D": SphereShape3D,
+	"StreamTexture3D": StreamTexture3D,
+	"Texture2D": Texture2D,
+	"Texture2DArray": Texture2DArray,
+	"Texture3D": Texture3D,
 	"ViewportTexture": ViewportTexture
 }
 
@@ -121,15 +126,16 @@ const valid_resource_script_whitelist = [
 	avatar_springbone_const
 	]
 	
-const script_type_table = {
-	avatar_physics_const: ["Position3D", "Spatial"],
-	avatar_definition_const: ["Position3D", "Spatial"],
-	avatar_definition_runtime_const: ["Position3D", "Spatial"],
-	vsk_pipeline_const: ["Node"]
-}
 
 static func check_if_script_type_is_valid(p_script: Script, p_node_class: String) -> bool:
-	if script_type_table.get(p_script) != null:
+	# FIXME: dictionary cannot be const????
+	var script_type_table = {
+		avatar_physics_const: ["Position3D", "Node3D"],
+		avatar_definition_const: ["Position3D", "Node3D"],
+		avatar_definition_runtime_const: ["Position3D", "Node3D"],
+		vsk_pipeline_const: ["Node"]
+	}
+	if typeof(script_type_table.get(p_script)) != TYPE_NIL:
 		var valid_classes: Array = script_type_table.get(p_script)
 		for class_str in valid_classes:
 			if class_str == p_node_class:

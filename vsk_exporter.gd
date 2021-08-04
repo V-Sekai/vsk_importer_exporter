@@ -1,4 +1,4 @@
-tool
+@tool
 extends Node
 
 var vsk_editor: Node = null
@@ -9,7 +9,7 @@ var save_dialog: FileDialog = null
 var current_scene_root: Node = null
 var user_content_submission_cancelled: bool = false
 
-var vsk_exporter_addon_interface: Reference = vsk_exporter_addon_interface_const.new()
+var vsk_exporter_addon_interface: RefCounted = vsk_exporter_addon_interface_const.new()
 
 const EXPORT_FLAGS = ResourceSaver.FLAG_COMPRESS | ResourceSaver.FLAG_OMIT_EDITOR_PROPERTIES
 
@@ -26,7 +26,7 @@ const map_definition_runtime_const = preload("res://addons/vsk_map/vsk_map_defin
 
 const avatar_fixer_const = preload("res://addons/vsk_avatar/avatar_fixer.gd")
 const bone_lib_const = preload("res://addons/vsk_avatar/bone_lib.gd")
-const node_util_const = preload("res://addons/gdutil/node_util.gd")
+const node_util_const = preload("res://addons/gd_util/node_util.gd")
 
 const avatar_callback_const = preload("res://addons/vsk_avatar/avatar_callback.gd")
 const map_callback_const = preload("res://addons/vsk_map/map_callback.gd")
@@ -36,16 +36,16 @@ const validator_map_const = preload("vsk_map_validator.gd")
 
 const entity_node_const = preload("res://addons/entity_manager/entity.gd")
  
-func get_valid_filenames(p_filename: String, p_validator: Reference, p_existing_valid_filenames: Array) -> Array:
+func get_valid_filenames(p_filename: String, p_validator: RefCounted, p_existing_valid_filenames: Array) -> Array:
 	if p_validator.is_path_an_entity(p_filename):
 		p_existing_valid_filenames.push_back(p_filename)
 		
 	if p_filename != "":
 		if ResourceLoader.exists(p_filename):
 			var packed_scene: PackedScene = ResourceLoader.load(p_filename)
-			var instance: PackedScene = packed_scene.get_state().get_node_instance(0)
-			if instance != null:
-				p_existing_valid_filenames = get_valid_filenames(instance.get_path(), p_validator, p_existing_valid_filenames)
+			var instantiate: PackedScene = packed_scene.get_state().get_node_instance(0)
+			if instantiate != null:
+				p_existing_valid_filenames = get_valid_filenames(instantiate.get_path(), p_validator, p_existing_valid_filenames)
 		else:
 			printerr("File does not exist: %s" % p_filename)
 		
@@ -70,15 +70,15 @@ func assign_filename_for_entity_id(p_node: Node, p_entity_id: int) -> void:
 		
 	p_node.set_filename(networked_scenes[p_entity_id])
 	
-func get_valid_entity_id(p_node: Node, p_validator: Reference) -> int:
+func get_valid_entity_id(p_node: Node, p_validator: RefCounted) -> int:
 	var valid_filenames: Array = get_valid_filenames(p_node.get_filename(), p_validator, [])
 	var entity_id: int = find_entity_id_from_filenames(valid_filenames)
 	return entity_id
 	
-func is_valid_entity(p_node: Node, p_validator: Reference) -> bool:
+func is_valid_entity(p_node: Node, p_validator: RefCounted) -> bool:
 	return get_valid_entity_id(p_node, p_validator) >= 0
 
-func sanitise_array(p_array: Array, p_table: Dictionary, p_visited: Dictionary, p_root: Node, p_validator: Reference) -> Dictionary:
+func sanitise_array(p_array: Array, p_table: Dictionary, p_visited: Dictionary, p_root: Node, p_validator: RefCounted) -> Dictionary:
 	var new_array = []
 	if p_array:
 		for i in range(0, p_array.size()):
@@ -118,7 +118,7 @@ func sanitise_array(p_array: Array, p_table: Dictionary, p_visited: Dictionary, 
 
 
 func sanitise_dictionary(
-	p_dictionary: Dictionary, p_table: Dictionary, p_visited: Dictionary, p_root: Node, p_validator: Reference) -> Dictionary:
+	p_dictionary: Dictionary, p_table: Dictionary, p_visited: Dictionary, p_root: Node, p_validator: RefCounted) -> Dictionary:
 	var new_dictionary: Dictionary = {}
 	if p_dictionary:
 		for key in p_dictionary.keys():
@@ -155,7 +155,7 @@ func sanitise_dictionary(
 	return {"visited":p_visited, "dictionary":new_dictionary}
 
 
-func sanitise_object(p_object: Object, p_table: Dictionary, p_visited: Dictionary, p_root: Node, p_validator: Reference) -> Dictionary:
+func sanitise_object(p_object: Object, p_table: Dictionary, p_visited: Dictionary, p_root: Node, p_validator: RefCounted) -> Dictionary:
 	if p_object:
 		p_visited["visited_nodes"].push_back(p_object)
 		
@@ -224,7 +224,7 @@ func sanitise_object(p_object: Object, p_table: Dictionary, p_visited: Dictionar
 
 	return p_visited
 	
-func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplicate_root: Node, p_reference_root: Node, p_visited: Dictionary, p_validator: Reference) -> Dictionary:
+func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplicate_root: Node, p_reference_root: Node, p_visited: Dictionary, p_validator: RefCounted) -> Dictionary:
 	print("Sanitising Instance: %s" % p_duplicate_node.get_name())
 	
 	# Check if this node is deriving an entity scene
@@ -290,7 +290,7 @@ func sanitise_entity_children(
 	p_visited: Dictionary,
 	p_duplicate_node: Node,
 	p_reference_node: Node,
-	p_validator: Reference,
+	p_validator: RefCounted,
 	p_entity_root: Node
 	) -> Dictionary:
 	if p_reference_node.get_owner() != p_entity_root:
@@ -322,7 +322,7 @@ func sanitise_node(
 	p_visited: Dictionary,
 	p_duplicate_root: Node,
 	p_reference_root: Node,
-	p_validator: Reference
+	p_validator: RefCounted
 	) -> Dictionary:
 	print("Sanitising node '%s'" % p_duplicate_root.get_path_to(p_duplicate_node))
 	
@@ -364,20 +364,20 @@ func sanitise_node(
 	
 	return p_visited
 	
-func convert_object(p_table: Dictionary, p_subobject: Object, p_root: Node, p_validator: Reference) -> Dictionary:
-	if p_subobject is StreamTexture:
-		print("Texture %s processing..." % p_subobject.resource_path)
+func convert_object(p_table: Dictionary, p_subobject: Object, p_root: Node, p_validator: RefCounted) -> Dictionary:
+	if p_subobject is StreamTexture2D:
+		print("Texture2D %s processing..." % p_subobject.resource_path)
 		var image: Image = p_subobject.get_data()
 			
 		print("Image loaded...")
 			
 		var new_image_texture: ImageTexture = ImageTexture.new()
-		new_image_texture.create_from_image(image, p_subobject.flags)
+		new_image_texture.create_from_image(image) #, p_subobject.flags)
 		p_table[p_subobject] = new_image_texture
-	elif p_subobject is TextureArray:
-		print("TextureArray %s processing..." % p_subobject.resource_path)
+	elif p_subobject is Texture2DArray:
+		print("Texture2DArray %s processing..." % p_subobject.resource_path)
 		
-		var new_tex_array: TextureArray = TextureArray.new()
+		var new_tex_array: Texture2DArray = Texture2DArray.new()
 		
 		new_tex_array.resource_local_to_scene = true
 		new_tex_array.take_over_path("")
@@ -414,7 +414,7 @@ func create_object_duplication_table_for_array(
 	p_array: Array,
 	p_table: Dictionary,
 	p_root: Node,
-	p_validator: Reference
+	p_validator: RefCounted
 	) -> Dictionary:
 	if p_array:
 		for element in p_array:
@@ -436,7 +436,7 @@ func create_object_duplication_table_for_dictionary(
 	p_dictionary: Dictionary,
 	p_table: Dictionary,
 	p_root: Node,
-	p_validator: Reference
+	p_validator: RefCounted
 ) -> Dictionary:
 	if p_dictionary:
 		for key in p_dictionary.keys():
@@ -463,7 +463,7 @@ static func clone_resource(p_resource: Resource) -> Resource:
 				prop_values[property["name"]] = p_resource.get(property["name"])
 		
 		var orig_type = p_resource.get_class()
-		var inst = ClassDB.instance(orig_type);
+		var inst = ClassDB.instantiate(orig_type);
 			
 		for key in prop_values.keys():
 			inst.set(key, prop_values[key]);
@@ -476,7 +476,7 @@ func create_object_duplication_table_for_object(
 	p_object: Object,
 	p_table: Dictionary,
 	p_root: Node,
-	p_validator: Reference
+	p_validator: RefCounted
 	) -> Dictionary:
 	for property in p_object.get_property_list():
 		match property["type"]:
@@ -529,7 +529,7 @@ func create_object_duplication_table_for_node(
 	p_node: Node,
 	p_table: Dictionary,
 	p_root: Node,
-	p_validator: Reference
+	p_validator: RefCounted
 	) -> Dictionary:
 	p_table = create_object_duplication_table_for_object(p_node, p_table, p_root, p_validator)
 
@@ -539,7 +539,7 @@ func create_object_duplication_table_for_node(
 	return p_table
 
 
-func create_sanitised_duplication(p_node: Node, p_validator: Reference) -> Dictionary:
+func create_sanitised_duplication(p_node: Node, p_validator: RefCounted) -> Dictionary:
 	var reference_node: Node = p_node.duplicate()
 	
 	# Run any addons on a duplicate of the scene before anything else
@@ -567,17 +567,17 @@ func create_sanitised_duplication(p_node: Node, p_validator: Reference) -> Dicti
 	return {"node":duplicate_node, "entity_nodes":visited["entity_nodes"]}
 
 	
-static func get_offset_from_bone(p_global_transform: Transform, p_skeleton: Skeleton, p_bone_name: String) -> Transform:
+static func get_offset_from_bone(p_global_transform: Transform3D, p_skeleton: Skeleton3D, p_bone_name: String) -> Transform3D:
 	var bone_id: int = p_skeleton.find_bone(p_bone_name)
 	if bone_id != -1:
-		var bone_global_rest_transfrom: Transform = bone_lib_const.get_bone_global_rest_transform(
+		var bone_global_rest_transfrom: Transform3D = bone_lib_const.get_bone_global_rest_transform(
 			bone_id, p_skeleton
 		)
 		return p_global_transform * bone_global_rest_transfrom.inverse()
 		
-	return Transform()
+	return Transform3D()
 	
-static func evaluate_meta_spatial(p_root: Spatial, p_skeleton: Spatial, p_humanoid_data: HumanoidData, p_meta: Spatial, p_humanoid_bone_name: String) -> int:
+static func evaluate_meta_spatial(p_root: Node3D, p_skeleton: Node3D, p_humanoid_data: HumanoidData, p_meta: Node3D, p_humanoid_bone_name: String) -> int:
 	if p_meta and p_skeleton and p_humanoid_data:
 		if p_root.is_a_parent_of(p_meta):
 			if p_meta != p_skeleton and p_meta != p_root:
@@ -594,11 +594,11 @@ static func _fix_humanoid_skeleton(
 	var err: int = avatar_callback_const.generic_error_check(p_node, p_node._skeleton_node)
 	
 	var eye_head_id: int = -1
-	var eye_spatial : Spatial = null
-	var eye_offset_transform: Transform = Transform()
+	var eye_spatial : Node3D = null
+	var eye_offset_transform: Transform3D = Transform3D()
 	var mouth_head_id: int = -1
-	var mouth_spatial: Spatial = null
-	var mouth_offset_transform: Transform = Transform()
+	var mouth_spatial: Node3D = null
+	var mouth_offset_transform: Transform3D = Transform3D()
 	
 	# Get the eyes and mouth and store their relative transform to the head bone
 	if err == avatar_callback_const.AVATAR_OK:
@@ -607,11 +607,11 @@ static func _fix_humanoid_skeleton(
 		mouth_head_id = evaluate_meta_spatial(p_node, p_node._skeleton_node, p_node.humanoid_data, mouth_node, "head_bone_name")
 		eye_head_id = evaluate_meta_spatial(p_node, p_node._skeleton_node, p_node.humanoid_data, eye_node, "head_bone_name")
 		
-		var skeleton_gt: Transform = node_util_const.get_relative_global_transform(p_root, p_node._skeleton_node)
+		var skeleton_gt: Transform3D = node_util_const.get_relative_global_transform(p_root, p_node._skeleton_node)
 		
 		if eye_head_id != -1:
-			var meta_gt: Transform = node_util_const.get_relative_global_transform(p_root, eye_node)
-			var bone_gt: Transform = skeleton_gt\
+			var meta_gt: Transform3D = node_util_const.get_relative_global_transform(p_root, eye_node)
+			var bone_gt: Transform3D = skeleton_gt\
 			* bone_lib_const.get_bone_global_rest_transform(eye_head_id, p_node._skeleton_node)
 			
 			eye_offset_transform = bone_gt.affine_inverse() * meta_gt
@@ -619,8 +619,8 @@ static func _fix_humanoid_skeleton(
 			
 			eye_node.free()
 		if mouth_head_id != -1:
-			var meta_gt: Transform = node_util_const.get_relative_global_transform(p_root, mouth_node)
-			var bone_gt: Transform = skeleton_gt\
+			var meta_gt: Transform3D = node_util_const.get_relative_global_transform(p_root, mouth_node)
+			var bone_gt: Transform3D = skeleton_gt\
 			* bone_lib_const.get_bone_global_rest_transform(mouth_head_id, p_node._skeleton_node)
 			
 			mouth_offset_transform = bone_gt.affine_inverse() * meta_gt
@@ -628,32 +628,32 @@ static func _fix_humanoid_skeleton(
 	
 			mouth_node.free()
 	
-	"""
-	TODO: create generic post-export plugin system
-	"""
+	## 
+	## 	TODO: create generic post-export plugin system
+	## 	
 	
-	"""
-	var ik_pose_output: Dictionary = {}
-	if err == avatar_callback_const.AVATAR_OK:
-		if p_ik_pose_fixer:
-			ik_pose_output = p_ik_pose_fixer.setup_ik_t_pose(p_node, p_node._skeleton_node, p_node.humanoid_data, false)
-			err = ik_pose_output["result"]
-	
-	if err == avatar_callback_const.AVATAR_OK:
-		if p_rotation_fixer:
-			err = p_rotation_fixer.fix_rotations(p_node, p_node._skeleton_node, p_node.humanoid_data, ik_pose_output["custom_bone_pose_array"])
-	
-	if err == avatar_callback_const.AVATAR_OK:
-		if p_external_transform_fixer:
-			err = p_external_transform_fixer.fix_external_transform(p_node, p_node._skeleton_node)
-	"""
+	## 
+	## 	var ik_pose_output: Dictionary = {}
+	## 	if err == avatar_callback_const.AVATAR_OK:
+	## 		if p_ik_pose_fixer:
+	## 			ik_pose_output = p_ik_pose_fixer.setup_ik_t_pose(p_node, p_node._skeleton_node, p_node.humanoid_data, false)
+	## 			err = ik_pose_output["result"]
+	## 	
+	## 	if err == avatar_callback_const.AVATAR_OK:
+	## 		if p_rotation_fixer:
+	## 			err = p_rotation_fixer.fix_rotations(p_node, p_node._skeleton_node, p_node.humanoid_data, ik_pose_output["custom_bone_pose_array"])
+	## 	
+	## 	if err == avatar_callback_const.AVATAR_OK:
+	## 		if p_external_transform_fixer:
+	## 			err = p_external_transform_fixer.fix_external_transform(p_node, p_node._skeleton_node)
+	## 	
 	
 	# Zero out the avatar node
-	p_node.transform = Transform()
+	p_node.transform = Transform3D()
 	
 	# Create and assign new eye and mouth reference nodes
 	if err == avatar_callback_const.AVATAR_OK:
-		var skeleton_gt: Transform = node_util_const.get_relative_global_transform(p_root, p_node._skeleton_node)
+		var skeleton_gt: Transform3D = node_util_const.get_relative_global_transform(p_root, p_node._skeleton_node)
 		if eye_spatial:
 			print("Assigning Eye...")
 			eye_spatial.set_name("Eye")
@@ -661,7 +661,7 @@ static func _fix_humanoid_skeleton(
 			eye_spatial.owner = p_node
 			p_node.eye_transform_node_path = p_node.get_path_to(eye_spatial)
 			
-			var bone_gt: Transform = skeleton_gt\
+			var bone_gt: Transform3D = skeleton_gt\
 			* bone_lib_const.get_bone_global_rest_transform(eye_head_id, p_node._skeleton_node)
 			
 			node_util_const.set_relative_global_transform(p_node, eye_spatial, bone_gt * eye_offset_transform)
@@ -673,7 +673,7 @@ static func _fix_humanoid_skeleton(
 			mouth_spatial.owner = p_node
 			p_node.mouth_transform_node_path = p_node.get_path_to(mouth_spatial)
 			
-			var bone_gt: Transform = skeleton_gt\
+			var bone_gt: Transform3D = skeleton_gt\
 			* bone_lib_const.get_bone_global_rest_transform(mouth_head_id, p_node._skeleton_node)
 			
 			node_util_const.set_relative_global_transform(p_node, mouth_spatial, bone_gt * mouth_offset_transform)
@@ -685,8 +685,8 @@ static func convert_to_runtime_user_content(p_node: Node, p_script: Script) -> N
 	# Clear the preview camera
 	var camera_node_path = p_node.get("vskeditor_preview_camera_path")
 	if camera_node_path is NodePath:
-		var camera: Camera = p_node.get_node_or_null(camera_node_path)
-		if camera is Camera:
+		var camera: Camera3D = p_node.get_node_or_null(camera_node_path)
+		if camera is Camera3D:
 			camera.queue_free()
 			camera.get_parent().remove_child(camera)
 	
@@ -719,9 +719,9 @@ static func convert_to_runtime_user_content(p_node: Node, p_script: Script) -> N
 func save_user_content_resource(p_path: String, p_packed_scene: PackedScene) -> int:
 	return ResourceSaver.save(p_path, p_packed_scene, EXPORT_FLAGS)
 	
-"""
-Avatar
-"""
+## 
+## Avatar
+## 
 	
 func create_packed_scene_for_avatar(p_root: Node,\
 	p_node: Node) -> Dictionary:
@@ -810,12 +810,12 @@ func export_avatar(\
 	
 	return err
 	
-"""
-Map
-"""
+## 
+## Map
+## 
 	
 func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
-	var validator:validator_map_const = validator_map_const.new()
+	var validator = validator_map_const.new()
 		
 	print("Creating sanitised duplicate...")
 	var dictionary : Dictionary = create_sanitised_duplication(p_node, validator)
@@ -835,7 +835,7 @@ func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 		duplicate_node = convert_to_runtime_user_content(duplicate_node, map_definition_runtime_const)
 		duplicate_node.map_resources = entity_resource_array
 
-		print("Add entity nodes to instance list...")
+		print("Add entity nodes to instantiate list...")
 		for _i in range(0, dictionary["entity_nodes"].size()):
 			duplicate_node.entity_instance_list.push_back(map_definition_const.EntityInstance.new())
 			
@@ -899,9 +899,9 @@ func export_map(p_root: Node, p_node: Node, p_path: String) -> int:
 		
 	return err
 
-"""
-Online submission
-"""
+## 
+## Online submission
+## 
 
 func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: Dictionary) -> void:
 	print("vsk_exporter::_user_content_submission_requested")
@@ -910,7 +910,7 @@ func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: 
 	user_content_submission_cancelled = false
 	
 	var export_data_callback = p_upload_data["export_data_callback"]
-	var export_data: Dictionary = export_data_callback.call_func()
+	var export_data: Dictionary = export_data_callback.call()
 
 	var root: Node = export_data["root"]
 	var node: Node = export_data["node"]
@@ -927,9 +927,9 @@ func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: 
 			if err == avatar_callback_const.AVATAR_OK:
 				packed_scene = packed_scene_dict["packed_scene"]
 				
-				p_callbacks["packed_scene_created"].call_func()
+				p_callbacks["packed_scene_created"].call()
 			else:
-				p_callbacks["packed_scene_creation_failed"].call_func("Avatar export failed!")
+				p_callbacks["packed_scene_creation_failed"].call("Avatar export failed!")
 		vsk_types_const.UserContentType.Map:
 			var packed_scene_dict: Dictionary = create_packed_scene_for_map(root,\
 			node)
@@ -939,16 +939,16 @@ func _user_content_submission_requested(p_upload_data: Dictionary, p_callbacks: 
 			if err == map_callback_const.MAP_OK:
 				packed_scene = packed_scene_dict["packed_scene"]
 				
-				p_callbacks["packed_scene_created"].call_func()
+				p_callbacks["packed_scene_created"].call()
 			else:
-				p_callbacks["packed_scene_creation_failed"].call_func("Avatar export failed!")
+				p_callbacks["packed_scene_creation_failed"].call("Avatar export failed!")
 	
 	if !user_content_submission_cancelled and packed_scene:
-		var pre_uploading_callback: FuncRef = p_callbacks["packed_scene_pre_uploading"]
+		var pre_uploading_callback: Callable = p_callbacks["packed_scene_pre_uploading"]
 		if pre_uploading_callback.is_valid():
-			p_callbacks["packed_scene_pre_uploading"].call_func(packed_scene, p_upload_data, p_callbacks)
+			p_callbacks["packed_scene_pre_uploading"].call(packed_scene, p_upload_data, p_callbacks)
 		else:
-			p_callbacks["packed_scene_creation_failed"].call_func("Pre-upload callback failed!")
+			p_callbacks["packed_scene_creation_failed"].call("Pre-upload callback failed!")
 
 func _user_content_submission_cancelled() -> void:
 	user_content_submission_cancelled = true
@@ -966,28 +966,29 @@ func create_temp_folder() -> int:
 			
 	return err
 	
-func get_export_addon_interface() -> Reference:
+func get_export_addon_interface() -> RefCounted:
 	return vsk_exporter_addon_interface
 
-"""
-Linking
-"""
+## 
+## Linking
+## 
 	
 func _link_vsk_editor(p_node: Node) -> void:
 	print("_link_vsk_editor")
+	var do_connect: bool = vsk_editor != p_node
 	vsk_editor = p_node
 
-	if vsk_editor:
-		if vsk_editor.connect("user_content_submission_requested", self, "_user_content_submission_requested", [], CONNECT_DEFERRED) != OK:
+	if vsk_editor and do_connect:
+		if vsk_editor.connect("user_content_submission_requested", Callable(self, "_user_content_submission_requested"), [], CONNECT_DEFERRED) != OK:
 			printerr("Could not connect signal 'user_content_submission_requested'")
-		if vsk_editor.connect("user_content_submission_cancelled", self, "_user_content_submission_cancelled", [], CONNECT_DEFERRED) != OK:
+		if vsk_editor.connect("user_content_submission_cancelled", Callable(self, "_user_content_submission_cancelled"), [], CONNECT_DEFERRED) != OK:
 			printerr("Could not connect signal 'user_content_submission_cancelled'")
 	
 func _unlink_vsk_editor() -> void:
 	print("_unlink_vsk_editor")
 	
-	vsk_editor.disconnect("user_content_submission_requested", self, "_user_content_submission_requested")
-	vsk_editor.disconnect("user_content_submission_cancelled", self, "_user_content_submission_cancelled")
+	vsk_editor.disconnect("user_content_submission_requested", Callable(self, "_user_content_submission_requested"))
+	vsk_editor.disconnect("user_content_submission_cancelled", Callable(self, "_user_content_submission_cancelled"))
 	
 	vsk_editor = null
 	
@@ -1002,16 +1003,16 @@ func _node_removed(p_node: Node) -> void:
 	if p_node == vsk_editor:
 		_unlink_vsk_editor()
 		
-"""
-
-"""
+## 
+## 
+## 
 
 func _ready():
 	if Engine.is_editor_hint():
-		assert(get_tree().connect("node_added", self, "_node_added") == OK)
-		assert(get_tree().connect("node_removed", self, "_node_removed") == OK)
+		assert(get_tree().connect("node_added", Callable(self, "_node_added")) == OK)
+		assert(get_tree().connect("node_removed", Callable(self, "_node_removed")) == OK)
 		
-		_link_vsk_editor(get_node_or_null("/root/VSKEditor"))
+		_link_vsk_editor(VSKEditor)
 		
 		if create_temp_folder() != OK:
 			printerr("Could not create temp folder")

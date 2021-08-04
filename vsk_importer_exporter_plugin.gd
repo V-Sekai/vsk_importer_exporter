@@ -1,10 +1,10 @@
-tool
+@tool
 extends EditorPlugin
 
 var editor_interface: EditorInterface = null
 
 
-func _init() -> void:
+func _init():
 	print("Initialising VSKImporterExporter plugin")
 
 
@@ -14,7 +14,7 @@ func _notification(p_notification: int):
 			print("Destroying VSKImporterExporter plugin")
 
 
-func get_name() -> String:
+func _get_plugin_name() -> String:
 	return "VSKImporterExporter"
 
 
