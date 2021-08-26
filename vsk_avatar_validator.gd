@@ -92,7 +92,7 @@ var valid_resource_whitelist = {
 	"PrimitiveMesh": PrimitiveMesh,
 	"PrismMesh": PrismMesh,
 	"ProxyTexture": ProxyTexture,
-	"RayShape3D": RayShape3D,
+	# "RayShape3D": RayShape3D,
 	"QuadMesh": QuadMesh,
 	"Resource": Resource,
 	"Shader": Shader,
