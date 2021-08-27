@@ -5,7 +5,7 @@ static func check_basic_node_3d_value_targets(p_subnames: String) -> bool:
 	match p_subnames:
 		"position":
 			return true
-		"rotation_degrees":
+		"rotation":
 			return true
 		"scale":
 			return true

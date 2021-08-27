@@ -285,7 +285,7 @@ static func build_ref_node_tree(
 	return root_ref_node
 
 # Read the next integer in the array and increment the internal IDX
-static func reader_snode(p_snodes: PackedInt64Array, p_reader: Dictionary) -> Dictionary:
+static func reader_snode(p_snodes: PackedInt32Array, p_reader: Dictionary) -> Dictionary:
 	if p_reader.idx < p_snodes.size() and p_reader.idx >= 0:
 		p_reader.result = p_snodes[p_reader.idx]
 		p_reader.idx += 1
@@ -311,7 +311,7 @@ static func sanitise_packed_scene(
 	var node_count: int = packed_scene_bundle["node_count"]
 
 	if node_count > 0:
-		var snodes: PackedInt64Array = packed_scene_bundle["nodes"]
+		var snodes: PackedInt32Array = packed_scene_bundle["nodes"]
 		var snode_reader = {"idx": 0, "result": -1}
 		for _i in range(0, node_count):
 			var nd = NodeData.new()
