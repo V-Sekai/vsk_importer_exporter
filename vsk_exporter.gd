@@ -71,7 +71,7 @@ func assign_filename_for_entity_id(p_node: Node, p_entity_id: int) -> void:
 	p_node.set_filename(networked_scenes[p_entity_id])
 	
 func get_valid_entity_id(p_node: Node, p_validator: RefCounted) -> int:
-	var valid_filenames: Array = get_valid_filenames(p_node.get_filename(), p_validator, [])
+	var valid_filenames: Array = get_valid_filenames(p_node.get_scene_file_path(), p_validator, [])
 	var entity_id: int = find_entity_id_from_filenames(valid_filenames)
 	return entity_id
 	
@@ -228,7 +228,7 @@ func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplica
 	print("Sanitising Instance: %s" % p_duplicate_node.get_name())
 	
 	# Check if this node is deriving an entity scene
-	if p_duplicate_node.get_filename() != "":
+	if p_duplicate_node.get_scene_file_path() != "":
 		print("Node filename %s" % p_duplicate_node.get_filename())
 		# Check if this entity inherits any valid entity filenames
 		if is_valid_entity(p_duplicate_node, p_validator):
@@ -848,7 +848,7 @@ func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 			# Assign the entity instances
 			duplicate_node.entity_instance_list[i].parent_id = entity_parent_index
 			duplicate_node.entity_instance_list[i].transform = entity.get_transform()
-			var valid_filenames: Array = get_valid_filenames(entity.get_filename(), validator, [])
+			var valid_filenames: Array = get_valid_filenames(entity.get_scene_file_path(), validator, [])
 			var entity_index:int = find_entity_id_from_filenames(valid_filenames)
 			duplicate_node.entity_instance_list[i].entity_id = entity_index
 			
