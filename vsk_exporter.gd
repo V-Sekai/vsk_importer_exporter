@@ -579,7 +579,7 @@ static func get_offset_from_bone(p_global_transform: Transform3D, p_skeleton: Sk
 	
 static func evaluate_meta_spatial(p_root: Node3D, p_skeleton: Node3D, p_humanoid_data: HumanoidData, p_meta: Node3D, p_humanoid_bone_name: String) -> int:
 	if p_meta and p_skeleton and p_humanoid_data:
-		if p_root.is_a_parent_of(p_meta):
+		if p_root.is_ancestor_of(p_meta):
 			if p_meta != p_skeleton and p_meta != p_root:
 				var bone_name: String = p_humanoid_data.get(p_humanoid_bone_name)
 				return p_skeleton.find_bone(bone_name)
