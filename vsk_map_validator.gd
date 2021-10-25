@@ -119,7 +119,7 @@ var valid_resource_whitelist = {
 	"ProceduralSkyMaterial": ProceduralSkyMaterial,
 	"PhysicsMaterial": PhysicsMaterial,
 	"PlaneMesh": PlaneMesh,
-	"WorldMarginShape": WorldBoundaryShape3D,
+	"WorldBoundaryShape3D": WorldBoundaryShape3D,
 	"PointMesh": PointMesh,
 	"PrimitiveMesh": PrimitiveMesh,
 	"PrismMesh": PrismMesh,

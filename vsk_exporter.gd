@@ -68,7 +68,7 @@ func assign_filename_for_entity_id(p_node: Node, p_entity_id: int) -> void:
 	if ProjectSettings.has_setting("network/config/networked_scenes"):
 		networked_scenes = ProjectSettings.get_setting("network/config/networked_scenes")
 		
-	p_node.set_filename(networked_scenes[p_entity_id])
+	p_node.set_scene_file_path(networked_scenes[p_entity_id])
 	
 func get_valid_entity_id(p_node: Node, p_validator: RefCounted) -> int:
 	var valid_filenames: Array = get_valid_filenames(p_node.get_scene_file_path(), p_validator, [])
@@ -229,7 +229,7 @@ func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplica
 	
 	# Check if this node is deriving an entity scene
 	if p_duplicate_node.get_scene_file_path() != "":
-		print("Node filename %s" % p_duplicate_node.get_filename())
+		print("Node scene_file_path %s" % p_duplicate_node.get_scene_file_path())
 		# Check if this entity inherits any valid entity filenames
 		if is_valid_entity(p_duplicate_node, p_validator):
 			p_duplicate_node.clear_entity_signal_connections()
@@ -256,12 +256,12 @@ func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplica
 					if entity_id >= 0:
 						assign_filename_for_entity_id(child_duplicate_node, entity_id)
 				else:
-					child_duplicate_node.set_filename("")
+					child_duplicate_node.set_scene_file_path("")
 		else:
-			p_duplicate_node.set_filename("")
+			p_duplicate_node.set_scene_file_path("")
 		sanitise_owner(p_duplicate_node, p_reference_node, p_duplicate_root, p_reference_root)
 	else:
-		p_duplicate_node.set_filename("")
+		p_duplicate_node.set_scene_file_path("")
 		sanitise_owner(p_duplicate_node, p_reference_node, p_duplicate_root, p_reference_root)
 			
 	return p_visited
