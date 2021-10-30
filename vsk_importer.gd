@@ -67,25 +67,25 @@ static func get_ref_node_from_relative_path(p_node: RefNode, p_path: NodePath):
 	var current: RefNode = p_node
 	
 	for i in range(0, nodepath.get_name_count()):
-		var name: String = nodepath.get_name(i)
+		var nodepath_name: String = nodepath.get_name(i)
 		var next: RefNode = null
 		
-		if name == ".":
+		if nodepath_name == ".":
 			next = current
-		elif name == "..":
+		elif nodepath_name == "..":
 			if current == null or !current.parent:
 				return null
 				
 			next = current.parent
 		elif (current == null):
 			
-			if (name == root.get_name()):
+			if (nodepath_name == root.get_name()):
 				next = root
 		else:
 			next = null
 			
 			for child in current.children:
-				if child.name == name:
+				if child.name == nodepath_name:
 					next = child
 					break
 			if next == null:
@@ -123,37 +123,37 @@ static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validato
 			animation_player_ref_node = p_ref_branch.parent
 	
 	for property in p_ref_branch.properties:
-		var name = property["name"]
-		var value = property["value"]
+		var property_name = property["name"]
+		var property_value = property["value"]
 			
 		# We must make sure that any node path variants in this node only
 		# reference nodes within this scene
-		if value is NodePath:
-			var ref_node_path_target: RefNode = get_ref_node_from_relative_path(p_ref_branch, value)
+		if property_value is NodePath:
+			var ref_node_path_target: RefNode = get_ref_node_from_relative_path(p_ref_branch, property_value)
 			if ref_node_path_target == null:
 				return ImporterResult.UNSAFE_NODEPATH
 				
 			if ref_node_type == RefNodeType.ANIMATION_PLAYER:
-				if name == "root_node":
+				if property_name == "root_node":
 					animation_player_ref_node = ref_node_path_target
-		elif value is Script:
-			if name == "script":
+		elif property_value is Script:
+			if property_name == "script":
 				if is_instance:
 					return ImporterResult.SCRIPT_ON_INSTANCE_NODE
 				
 				if p_ref_branch.parent == null:
 					# Check if the script is valid for the root node
-					if !p_validator.is_script_valid_for_root(value, p_ref_branch.class_str):
+					if !p_validator.is_script_valid_for_root(property_value, p_ref_branch.class_str):
 						return ImporterResult.INVALID_ROOT_SCRIPT
 					else:
 						skip_type_check = true
 				else:
 					# Check if this object is a canvas anchor
-					if p_validator.is_valid_canvas_3d_anchor(value, p_ref_branch.class_str):
+					if p_validator.is_valid_canvas_3d_anchor(property_value, p_ref_branch.class_str):
 						children_belong_to_canvas = false
 						skip_type_check = true
 					# Check if this object is a canvas
-					elif p_validator.is_valid_canvas_3d(value, p_ref_branch.class_str):
+					elif p_validator.is_valid_canvas_3d(property_value, p_ref_branch.class_str):
 						if p_canvas:
 							return ImporterResult.RECURSIVE_CANVAS
 						else:
@@ -161,14 +161,14 @@ static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validato
 							skip_type_check = true
 					else:
 						# Check if it's another valid script for a child node
-						if !p_validator.is_script_valid_for_children(value, p_ref_branch.class_str):
+						if !p_validator.is_script_valid_for_children(property_value, p_ref_branch.class_str):
 							return ImporterResult.INVALID_CHILD_SCRIPT
 						else:
 							skip_type_check = true
 						
-		elif value is Animation:
+		elif property_value is Animation:
 			# Save all animation for later validation
-			animations.push_back(value)
+			animations.push_back(property_value)
 			
 	# Okay, with that information, make sure the node type itself is valid
 	if !skip_type_check:
@@ -365,23 +365,23 @@ static func sanitise_packed_scene(
 
 
 			for _j in range(0, property_count):
-				var name: int = -1
+				var name_id: int = -1
 				snode_reader = reader_snode(snodes, snode_reader)
 				if snode_reader.idx != -1:
-					name = snode_reader.result
+					name_id = snode_reader.result
 				else:
 					result = ImporterResult.READ_FAIL
 					break
 					
-				var value: int = -1
+				var value_id: int = -1
 				snode_reader = reader_snode(snodes, snode_reader)
 				if snode_reader.idx != -1:
-					value = snode_reader.result
+					value_id = snode_reader.result
 				else:
 					result = ImporterResult.READ_FAIL
 					break
 					
-				nd.properties.append({"name": name, "value": value})
+				nd.properties.append({"name": name_id, "value": value_id})
 				
 			if result != ImporterResult.OK:
 				break
