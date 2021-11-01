@@ -400,11 +400,8 @@ static func sanitise_packed_scene(
 			
 			# Parse groups but don't use them
 			for _j in range(0, group_count):
-				var group: int = -1
 				snode_reader = reader_snode(snodes, snode_reader)
-				if snode_reader.idx != -1:
-					group = snode_reader.result
-				else:
+				if snode_reader.idx == -1:
 					result = ImporterResult.READ_FAIL
 					break
 			
