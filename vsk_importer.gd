@@ -441,8 +441,6 @@ func sanitise_packed_scene_for_avatar(p_packed_scene: PackedScene) -> Dictionary
 	print("Sanitising avatar...")
 	var validator = validator_avatar_const.new()
 	return sanitise_packed_scene(p_packed_scene, validator)
-	
-	return {"packed_scene":p_packed_scene, "result":ImporterResult.OK}
-	
+
 func setup() -> void:
 	pass
