@@ -179,7 +179,6 @@ func is_node_type_string_valid(p_class_str: String, p_child_of_canvas: bool) -> 
 		return false
 	else:
 		return valid_node_whitelist.has(p_class_str)
-	return false
 
 func is_resource_type_valid(p_resource : Resource) -> bool:
 	if valid_resource_whitelist.has(p_resource.get_class()):
