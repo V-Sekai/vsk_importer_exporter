@@ -103,7 +103,7 @@ var valid_resource_whitelist = {
 	"CylinderMesh": CylinderMesh,
 	"CylinderShape3D": CylinderShape3D,
 	"Environment": Environment,
-	"GradientTexture": GradientTexture,
+	"GradientTexture1D": GradientTexture1D,
 	"HeightMapShape3D": HeightMapShape3D,
 	"ImageTexture": ImageTexture,
 	"LightmapGIData": LightmapGIData,
