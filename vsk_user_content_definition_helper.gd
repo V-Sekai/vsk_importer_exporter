@@ -7,7 +7,7 @@ enum UserContentFormat {
 }
 
 class VSKEditorProperties extends RefCounted:
-	var vskeditor_preview_type: String = "Camera3D"
+	var vskeditor_preview_type: String = "Camera"
 	var vskeditor_preview_camera_path: NodePath = NodePath()
 	var vskeditor_preview_texture: Texture2D = null
 	var vskeditor_pipeline_paths: Array = []

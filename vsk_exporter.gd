@@ -602,6 +602,7 @@ static func _fix_humanoid_skeleton(
 	
 	# Get the eyes and mouth and store their relative transform to the head bone
 	if err == avatar_callback_const.AVATAR_OK:
+		#TODO error check that none of the nodes are null
 		var eye_node: Node = p_node.get_node_or_null(p_node.eye_transform_node_path)
 		var mouth_node: Node = p_node.get_node_or_null(p_node.mouth_transform_node_path)
 		mouth_head_id = evaluate_meta_spatial(p_node, p_node._skeleton_node, p_node.humanoid_data, mouth_node, "head_bone_name")
@@ -761,7 +762,7 @@ func create_packed_scene_for_avatar(p_root: Node,\
 					duplicate_node,
 					duplicate_node._skeleton_node,
 					duplicate_node.humanoid_data)
-				
+					
 			if err == avatar_callback_const.AVATAR_OK:
 				var mesh_instances: Array = avatar_lib_const.find_mesh_instances_for_avatar_skeleton(p_root, p_root._skeleton_node, [])
 				var skins: Array = []
