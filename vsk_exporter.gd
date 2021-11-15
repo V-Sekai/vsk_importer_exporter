@@ -367,7 +367,7 @@ func sanitise_node(
 func convert_object(p_table: Dictionary, p_subobject: Object, p_root: Node, p_validator: RefCounted) -> Dictionary:
 	if p_subobject is StreamTexture2D:
 		print("Texture2D %s processing..." % p_subobject.resource_path)
-		var image: Image = p_subobject.get_data()
+		var image: Image = p_subobject.get_image()
 			
 		print("Image loaded...")
 			
@@ -718,6 +718,8 @@ static func convert_to_runtime_user_content(p_node: Node, p_script: Script) -> N
 	return p_node
 	
 func save_user_content_resource(p_path: String, p_packed_scene: PackedScene) -> int:
+	# Uncomment to debug exported scene references.
+	# ResourceSaver.save(p_path.replace(".scn",".tscn"), p_packed_scene, ResourceSaver.FLAG_OMIT_EDITOR_PROPERTIES)
 	return ResourceSaver.save(p_path, p_packed_scene, EXPORT_FLAGS)
 	
 ## 
