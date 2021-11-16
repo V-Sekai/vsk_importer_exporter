@@ -170,6 +170,7 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 			if class_str == p_node_class:
 				return true
 				
+	push_warning("Validator: Script failed check " + str(p_script) + "/" + str(p_script.resource_path) + " node_class " + p_node_class)
 	return false
 
 func is_script_valid_for_root(p_script: Script, p_node_class: String):
@@ -179,6 +180,7 @@ func is_script_valid_for_root(p_script: Script, p_node_class: String):
 	if valid_root_script_whitelist.find(p_script) != -1:
 		return check_if_script_type_is_valid(p_script, p_node_class)
 				
+	push_warning("Validator: Unknown root script " + str(p_script) + "/" + str(p_script.resource_path) + " node_class " + p_node_class)
 	return false
 
 func is_script_valid_for_children(p_script: Script, p_node_class: String):
@@ -188,6 +190,7 @@ func is_script_valid_for_children(p_script: Script, p_node_class: String):
 	if valid_children_script_whitelist.find(p_script) != -1:
 		return check_if_script_type_is_valid(p_script, p_node_class)
 				
+	push_warning("Validator: Unknown children script " + str(p_script) + "/" + str(p_script.resource_path) + " node_class " + p_node_class)
 	return false
 
 func is_script_valid_for_resource(p_script: Script):
@@ -197,24 +200,30 @@ func is_script_valid_for_resource(p_script: Script):
 	if valid_resource_script_whitelist.find(p_script) != -1:
 		return true
 	else:
+		push_warning("Validator: Unknown resource script " + str(p_script) + "/" + str(p_script.resource_path))
 		return false
 
 func is_node_type_valid(p_node: Node, p_child_of_canvas: bool) -> bool:
-	if valid_node_whitelist.has(p_node.get_class()):
+	if valid_node_whitelist.has(p_node.get_class()) or valid_canvas_node_whitelist.has(p_node.get_class()):
 		if !is_editor_only(p_node):
 			return true
+	push_warning("Validator: Unknown node type " + str(p_node.get_class()) + " (canvas " + str(p_child_of_canvas) + ")")
 	return false
 	
 func is_node_type_string_valid(p_class_str: String, p_child_of_canvas: bool) -> bool:
-	if p_child_of_canvas:
-		return valid_canvas_node_whitelist.has(p_class_str)
-	else:
-		return valid_node_whitelist.has(p_class_str)
+	if valid_canvas_node_whitelist.has(p_class_str) or valid_node_whitelist.has(p_class_str):
+		return true
+	#if p_child_of_canvas:
+	#	return valid_canvas_node_whitelist.has(p_class_str)
+	#else:
+	#	return valid_node_whitelist.has(p_class_str)
+	push_warning("Validator: Unknown node type string " + p_class_str + " (canvas " + str(p_child_of_canvas) + ")")
 	return false
 
 func is_resource_type_valid(p_resource: Resource) -> bool:
 	if valid_resource_whitelist.has(p_resource.get_class()):
 		return true
+	push_warning("Validator: Unknown resource type " + str(p_resource.get_class()))
 	return false
 
 func is_path_an_entity(p_packed_scene_path: String) -> bool:
@@ -227,18 +236,21 @@ func is_valid_entity_script(p_script: Script) -> bool:
 	if p_script == entity_script:
 		return true
 		
+	push_warning("Validator: Unknown entity script " + str(p_script) + "/" + str(p_script.resource_path) + " not " + str(entity_script) + "/" + str(entity_script.resource_path))
 	return false
 	
 func is_valid_canvas_3d(p_script: Script, p_node_class: String) -> bool:
 	if p_script == canvas_3d_script and p_node_class == "Node3D":
 		return true
 		
+	push_warning("Validator: Unknown Canvas3D " + str(p_script) + "/" + str(p_script.resource_path) + " node_class " + p_node_class + " not " + str(canvas_3d_script) + "/" + str(canvas_3d_script.resource_path) + " Node3D")
 	return false
 	
 func is_valid_canvas_3d_anchor(p_script: Script, p_node_class: String) -> bool:
 	if p_script == canvas_3d_anchor_const and p_node_class == "Node3D":
 		return true
 		
+	push_warning("Validator: Unknown Canvas3DAnchor " + str(p_script) + "/" + str(p_script.resource_path) + " node_class " + p_node_class + " not " + str(canvas_3d_script) + "/" + str(canvas_3d_script.resource_path) + " Node3D")
 	return false
 		
 func validate_value_track(p_subnames: String, p_node_class: String):
