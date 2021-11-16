@@ -606,8 +606,15 @@ static func _fix_humanoid_skeleton(
 	# Get the eyes and mouth and store their relative transform to the head bone
 	if err == avatar_callback_const.AVATAR_OK:
 		#TODO error check that none of the nodes are null
-		var eye_node: Node = p_node.get_node_or_null(p_node.eye_transform_node_path)
-		var mouth_node: Node = p_node.get_node_or_null(p_node.mouth_transform_node_path)
+		var eye_node: Node3D = p_node.get_node_or_null(p_node.eye_transform_node_path)
+		var mouth_node: Node3D = p_node.get_node_or_null(p_node.mouth_transform_node_path)
+		if mouth_node == null:
+			push_error("Avatar missing mouth. Please assign one in the avatar defintion!")
+			mouth_node = Node3D.new()
+			mouth_node.name = "AutoMouthPosition"
+			eye_node.get_parent().add_child(mouth_node)
+			mouth_node.transform = eye_node.transform
+			p_node.mouth_transform_node_path = p_node.get_path_to(mouth_node)
 		mouth_head_id = evaluate_meta_spatial(p_node, p_node._skeleton_node, p_node.humanoid_data, mouth_node, "head_bone_name")
 		eye_head_id = evaluate_meta_spatial(p_node, p_node._skeleton_node, p_node.humanoid_data, eye_node, "head_bone_name")
 		
@@ -723,7 +730,10 @@ static func convert_to_runtime_user_content(p_node: Node, p_script: Script) -> N
 func save_user_content_resource(p_path: String, p_packed_scene: PackedScene) -> int:
 	# Uncomment to debug exported scene references.
 	# ResourceSaver.save(p_path.replace(".scn",".tscn"), p_packed_scene, ResourceSaver.FLAG_OMIT_EDITOR_PROPERTIES)
-	return ResourceSaver.save(p_path, p_packed_scene, EXPORT_FLAGS)
+	var ret = ResourceSaver.save(p_path, p_packed_scene, EXPORT_FLAGS)
+	EditorPlugin.new().get_editor_interface().get_resource_filesystem().update_file(p_path)
+	EditorPlugin.new().get_editor_interface().get_resource_filesystem().scan()
+	return ret
 	
 ## 
 ## Avatar
