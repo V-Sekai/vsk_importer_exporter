@@ -21,20 +21,20 @@ const avatar_lib_const = preload("res://addons/vsk_avatar/avatar_lib.gd")
 const avatar_definition_const = preload("res://addons/vsk_avatar/vsk_avatar_definition.gd")
 const avatar_definition_runtime_const = preload("res://addons/vsk_avatar/vsk_avatar_definition_runtime.gd")
 
-const map_definition_const = preload("res://addons/vsk_map/vsk_map_definition.gd")
-const map_definition_runtime_const = preload("res://addons/vsk_map/vsk_map_definition_runtime.gd")
+var map_definition = load("res://addons/vsk_map/vsk_map_definition.gd")
+var map_definition_runtime = load("res://addons/vsk_map/vsk_map_definition_runtime.gd")
 
 const avatar_fixer_const = preload("res://addons/vsk_avatar/avatar_fixer.gd")
 const bone_lib_const = preload("res://addons/vsk_avatar/bone_lib.gd")
 const node_util_const = preload("res://addons/gd_util/node_util.gd")
 
 const avatar_callback_const = preload("res://addons/vsk_avatar/avatar_callback.gd")
-const map_callback_const = preload("res://addons/vsk_map/map_callback.gd")
+var map_callback_const = load("res://addons/vsk_map/map_callback.gd")
 
 const validator_avatar_const = preload("vsk_avatar_validator.gd")
-const validator_map_const = preload("vsk_map_validator.gd")
+var validator_map_const = load("vsk_map_validator.gd")
 
-const entity_node_const = preload("res://addons/entity_manager/entity.gd")
+var entity_node_const = load("res://addons/entity_manager/entity.gd")
  
 func get_valid_filenames(p_filename: String, p_validator: RefCounted, p_existing_valid_filenames: Array) -> Array:
 	if p_validator.is_path_an_entity(p_filename):
@@ -772,11 +772,11 @@ func create_packed_scene_for_avatar(p_root: Node,\
 			if has_humanoid_skeleton:
 				# Apply the avatar fixes
 				print("Applying avatar fixes")
-				
 				err = avatar_fixer_const.fix_avatar(
 					duplicate_node,
 					duplicate_node._skeleton_node,
-					duplicate_node.humanoid_data)
+					duplicate_node.humanoid_data,
+					null)
 					
 			if err == avatar_callback_const.AVATAR_OK:
 				var mesh_instances: Array = avatar_lib_const.find_mesh_instances_for_avatar_skeleton(p_root, p_root._skeleton_node, [])
@@ -789,7 +789,7 @@ func create_packed_scene_for_avatar(p_root: Node,\
 					else:
 						skins.push_back(null)
 						
-				if bone_lib_const.rename_skeleton_to_humanoid_bones(duplicate_node._skeleton_node, duplicate_node.humanoid_data, skins):
+				if bone_lib_const.rename_skeleton_to_humanoid_bones(duplicate_node._skeleton_node, duplicate_node.humanoid_data, skins, null):
 					packed_scene_export = PackedScene.new()
 					
 					duplicate_node.set_name(p_node.get_name()) # Reset name
@@ -848,12 +848,12 @@ func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 		packed_scene_export = PackedScene.new()
 		
 		print("Converting to runtime user content...")
-		duplicate_node = convert_to_runtime_user_content(duplicate_node, map_definition_runtime_const)
+		duplicate_node = convert_to_runtime_user_content(duplicate_node, map_definition_runtime)
 		duplicate_node.map_resources = entity_resource_array
 
 		print("Add entity nodes to instantiate list...")
 		for _i in range(0, dictionary["entity_nodes"].size()):
-			duplicate_node.entity_instance_list.push_back(map_definition_const.EntityInstance.new())
+			duplicate_node.entity_instance_list.push_back(map_definition.EntityInstance.new())
 			
 		print("Caching map resources...")
 		for i in range(0, dictionary["entity_nodes"].size()):
@@ -1027,7 +1027,7 @@ func _ready():
 	if Engine.is_editor_hint():
 		assert(get_tree().connect("node_added", Callable(self, "_node_added")) == OK)
 		assert(get_tree().connect("node_removed", Callable(self, "_node_removed")) == OK)
-		
+		var VSKEditor = null		
 		_link_vsk_editor(VSKEditor)
 		
 		if create_temp_folder() != OK:

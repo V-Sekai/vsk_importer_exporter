@@ -1,12 +1,7 @@
 @tool
 extends "res://addons/vsk_importer_exporter/vsk_validator.gd" # vsk_validator.gd
 
-const map_definition_const = preload("res://addons/vsk_map/vsk_map_definition.gd")
-const map_definition_runtime_const = preload("res://addons/vsk_map/vsk_map_definition_runtime.gd")
-
-const network_spawn_const = preload("res://addons/network_manager/network_spawn.gd")
-const canvas_3d_anchor_const = preload("res://addons/canvas_plane/canvas_3d_anchor.gd")
-const vsk_uro_pipeline_const = preload("res://addons/vsk_importer_exporter/vsk_uro_pipeline.gd")
+var canvas_3d_anchor = load("res://addons/canvas_plane/canvas_3d_anchor.gd")
 
 # FIXME: dictionary cannot be const????
 var valid_node_whitelist = {
@@ -64,7 +59,7 @@ var valid_node_whitelist = {
 }
 
 # TODO: please fill in the missing nodes
-const canvas_3d_script : Script = preload("res://addons/canvas_plane/canvas_3d.gd")
+var canvas_3d_script : Script = load("res://addons/canvas_plane/canvas_3d.gd")
 
 # FIXME: dictionary cannot be const????
 var valid_canvas_node_whitelist = {
@@ -145,24 +140,24 @@ var valid_resource_whitelist = {
 # Map Entities #
 ################
 
-const entity_script : Script = preload("res://addons/entity_manager/entity.gd")
+var entity_script : Script = load("res://addons/entity_manager/entity.gd")
 const valid_entity_whitelist = [
 	"res://addons/vsk_entities/vsk_interactable_prop.tscn"
 	]
-	
-	
-const valid_root_script_whitelist = [map_definition_const, map_definition_runtime_const]
-const valid_children_script_whitelist = [network_spawn_const, vsk_uro_pipeline_const]
 
 const valid_resource_script_whitelist = []
 
 static func check_if_script_type_is_valid(p_script: Script, p_node_class: String) -> bool:
-	# FIXME: dictionary cannot be const????
+	var network_spawn_const = load("res://addons/network_manager/network_spawn.gd")
+
+	var map_definition_runtime = load("res://addons/vsk_map/vsk_map_definition_runtime.gd")
+	var map_definition = load("res://addons/vsk_map/vsk_map_definition.gd")
+	var vsk_uro_pipeline = load("res://addons/vsk_importer_exporter/vsk_uro_pipeline.gd")
 	var script_type_table = {
 		network_spawn_const: ["Position3D", "Node3D"],
-		map_definition_const: ["Position3D", "Node3D"],
-		map_definition_runtime_const: ["Position3D", "Node3D"],
-		vsk_uro_pipeline_const: ["Node"]
+		map_definition: ["Position3D", "Node3D"],
+		map_definition_runtime: ["Position3D", "Node3D"],
+		vsk_uro_pipeline: ["Node"]
 	}
 	if script_type_table.get(p_script) != null:
 		var valid_classes: Array = script_type_table.get(p_script)
@@ -172,11 +167,14 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 				
 	push_warning("Validator: Script failed check " + str(p_script) + "/" + str(p_script.resource_path) + " node_class " + p_node_class)
 	return false
-
+	
 func is_script_valid_for_root(p_script: Script, p_node_class: String):
 	if p_script == null:
 		return true
-	
+		
+	var map_definition = load("res://addons/vsk_map/vsk_map_definition.gd")
+	var map_definition_runtime = load("res://addons/vsk_map/vsk_map_definition_runtime.gd")
+	var valid_root_script_whitelist = [map_definition, map_definition_runtime]
 	if valid_root_script_whitelist.find(p_script) != -1:
 		return check_if_script_type_is_valid(p_script, p_node_class)
 				
@@ -186,7 +184,9 @@ func is_script_valid_for_root(p_script: Script, p_node_class: String):
 func is_script_valid_for_children(p_script: Script, p_node_class: String):
 	if p_script == null:
 		return true
-	
+	var network_spawn_const = load("res://addons/network_manager/network_spawn.gd")
+	var vsk_uro_pipeline = load("res://addons/vsk_importer_exporter/vsk_uro_pipeline.gd")
+	var valid_children_script_whitelist = [network_spawn_const, vsk_uro_pipeline]
 	if valid_children_script_whitelist.find(p_script) != -1:
 		return check_if_script_type_is_valid(p_script, p_node_class)
 				
@@ -247,7 +247,7 @@ func is_valid_canvas_3d(p_script: Script, p_node_class: String) -> bool:
 	return false
 	
 func is_valid_canvas_3d_anchor(p_script: Script, p_node_class: String) -> bool:
-	if p_script == canvas_3d_anchor_const and p_node_class == "Node3D":
+	if p_script == canvas_3d_anchor and p_node_class == "Node3D":
 		return true
 		
 	push_warning("Validator: Unknown Canvas3DAnchor " + str(p_script) + "/" + str(p_script.resource_path) + " node_class " + p_node_class + " not " + str(canvas_3d_script) + "/" + str(canvas_3d_script.resource_path) + " Node3D")
