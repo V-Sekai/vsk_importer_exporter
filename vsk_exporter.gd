@@ -742,6 +742,8 @@ func save_user_content_resource(p_path: String, p_packed_scene: PackedScene) -> 
 func create_packed_scene_for_avatar(p_root: Node,\
 	p_node: Node) -> Dictionary:
 	
+	var undo_redo = UndoRedo.new()
+	
 	var packed_scene_export: PackedScene = null
 	var err: int = avatar_callback_const.AVATAR_FAILED
 	
@@ -789,7 +791,7 @@ func create_packed_scene_for_avatar(p_root: Node,\
 					else:
 						skins.push_back(null)
 						
-				if bone_lib_const.rename_skeleton_to_humanoid_bones(duplicate_node._skeleton_node, duplicate_node.humanoid_data, skins, null):
+				if bone_lib_const.rename_skeleton_to_humanoid_bones(duplicate_node._skeleton_node, duplicate_node.humanoid_data, skins, undo_redo):
 					packed_scene_export = PackedScene.new()
 					
 					duplicate_node.set_name(p_node.get_name()) # Reset name
