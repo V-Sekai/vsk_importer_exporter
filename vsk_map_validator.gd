@@ -201,7 +201,7 @@ func is_script_valid_for_resource(p_script: Script):
 	if valid_resource_script_whitelist.find(p_script) != -1:
 		return true
 	else:
-		push_warning("Validator: Unknown resource script " + str(p_script) + "/" + str(p_script.resource_path))
+		push_warning("Validator: Unknown resource script %s" % [str(p_script) + "/" + str(p_script.resource_path)])
 		return false
 
 func is_node_type_valid(p_node: Node, p_child_of_canvas: bool) -> bool:
