@@ -133,7 +133,8 @@ var valid_resource_whitelist = {
 	"TextureLayered": TextureLayered,
 	"ViewportTexture": ViewportTexture,
 	"VoxelGIData": VoxelGIData,
-	"WorldBoundaryShape3D": WorldBoundaryShape3D
+	"WorldBoundaryShape3D": WorldBoundaryShape3D,
+	"NavigationMesh": NavigationMesh,
 }
 
 ################
