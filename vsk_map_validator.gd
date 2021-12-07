@@ -1,5 +1,5 @@
 @tool
-extends "res://addons/vsk_importer_exporter/vsk_validator.gd" # vsk_validator.gd
+extends "res://addons/vsk_importer_exporter/vsk_validator.gd"
 
 var canvas_3d_anchor = load("res://addons/canvas_plane/canvas_3d_anchor.gd")
 

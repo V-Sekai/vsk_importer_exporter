@@ -1,5 +1,5 @@
 @tool
-extends "res://addons/vsk_importer_exporter/vsk_validator.gd" # vsk_validator.gd
+extends "res://addons/vsk_importer_exporter/vsk_validator.gd"
 
 const humanoid_data_const = preload("res://addons/vsk_avatar/humanoid_data.gd")
 const avatar_definition_const = preload("res://addons/vsk_avatar/vsk_avatar_definition.gd")

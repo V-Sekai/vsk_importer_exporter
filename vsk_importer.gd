@@ -1,9 +1,9 @@
 @tool
 extends Node
 
-const validator_const = preload("vsk_validator.gd")
-const validator_avatar_const = preload("vsk_avatar_validator.gd")
-const validator_map_const = preload("vsk_map_validator.gd")
+const validator_const = preload("res://addons/vsk_importer_exporter/vsk_validator.gd")
+const validator_avatar_const = preload("res://addons/vsk_importer_exporter/vsk_avatar_validator.gd")
+const validator_map_const = preload("res://addons/vsk_importer_exporter/vsk_map_validator.gd")
 
 const NO_PARENT_SAVED = 0x7FFFFFFF
 const NAME_INDEX_BITS = 18

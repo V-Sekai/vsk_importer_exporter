@@ -29,12 +29,12 @@ const bone_lib_const = preload("res://addons/vsk_avatar/bone_lib.gd")
 const node_util_const = preload("res://addons/gd_util/node_util.gd")
 
 const avatar_callback_const = preload("res://addons/vsk_avatar/avatar_callback.gd")
-var map_callback_const = load("res://addons/vsk_map/map_callback.gd")
+const map_callback_const = preload("res://addons/vsk_map/map_callback.gd")
 
-const validator_avatar_const = preload("vsk_avatar_validator.gd")
-var validator_map_const = load("vsk_map_validator.gd")
+const validator_avatar_const = preload("res://addons/vsk_importer_exporter/vsk_avatar_validator.gd")
+const validator_map_const = preload("res://addons/vsk_importer_exporter/vsk_map_validator.gd")
 
-var entity_node_const = load("res://addons/entity_manager/entity.gd")
+const entity_node_const = preload("res://addons/entity_manager/entity.gd")
  
 func get_valid_filenames(p_filename: String, p_validator: RefCounted, p_existing_valid_filenames: Array) -> Array:
 	if p_validator.is_path_an_entity(p_filename):
