@@ -51,7 +51,7 @@ func get_valid_filenames(p_filename: String, p_validator: RefCounted, p_existing
 		
 	return p_existing_valid_filenames
 	
-func find_entity_id_from_filenames(p_filenames: Array):
+func find_entity_scene_id_from_filenames(p_filenames: Array):
 	var networked_scenes:Array = []
 	if ProjectSettings.has_setting("network/config/networked_scenes"):
 		networked_scenes = ProjectSettings.get_setting("network/config/networked_scenes")
@@ -63,20 +63,20 @@ func find_entity_id_from_filenames(p_filenames: Array):
 	
 	return -1
 	
-func assign_filename_for_entity_id(p_node: Node, p_entity_id: int) -> void:
+func assign_filename_for_entity_scene_id(p_node: Node, p_entity_scene_id: int) -> void:
 	var networked_scenes:Array = []
 	if ProjectSettings.has_setting("network/config/networked_scenes"):
 		networked_scenes = ProjectSettings.get_setting("network/config/networked_scenes")
 		
-	p_node.set_scene_file_path(networked_scenes[p_entity_id])
+	p_node.set_scene_file_path(networked_scenes[p_entity_scene_id])
 	
-func get_valid_entity_id(p_node: Node, p_validator: RefCounted) -> int:
+func get_valid_entity_scene_id(p_node: Node, p_validator: RefCounted) -> int:
 	var valid_filenames: Array = get_valid_filenames(p_node.get_scene_file_path(), p_validator, [])
-	var entity_id: int = find_entity_id_from_filenames(valid_filenames)
-	return entity_id
+	var entity_scene_id: int = find_entity_scene_id_from_filenames(valid_filenames)
+	return entity_scene_id
 	
 func is_valid_entity(p_node: Node, p_validator: RefCounted) -> bool:
-	return get_valid_entity_id(p_node, p_validator) >= 0
+	return get_valid_entity_scene_id(p_node, p_validator) >= 0
 
 func sanitise_array(p_array: Array, p_table: Dictionary, p_visited: Dictionary, p_root: Node, p_validator: RefCounted) -> Dictionary:
 	var new_array = []
@@ -235,9 +235,9 @@ func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplica
 			p_duplicate_node.clear_entity_signal_connections()
 			
 			# Assign correct entity filename
-			var entity_id: int = get_valid_entity_id(p_duplicate_node, p_validator)
-			if entity_id >= 0:
-				assign_filename_for_entity_id(p_duplicate_node, entity_id)
+			var entity_scene_id: int = get_valid_entity_scene_id(p_duplicate_node, p_validator)
+			if entity_scene_id >= 0:
+				assign_filename_for_entity_scene_id(p_duplicate_node, entity_scene_id)
 			
 			# Add it to the list
 			p_visited["entity_nodes"].push_back(p_duplicate_node)
@@ -252,9 +252,9 @@ func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplica
 					
 				if is_valid_entity(child_duplicate_node, p_validator):
 					sanitise_owner(child_duplicate_node, child_reference_node, p_duplicate_root, p_reference_root)
-					entity_id = get_valid_entity_id(child_duplicate_node, p_validator)
-					if entity_id >= 0:
-						assign_filename_for_entity_id(child_duplicate_node, entity_id)
+					entity_scene_id = get_valid_entity_scene_id(child_duplicate_node, p_validator)
+					if entity_scene_id >= 0:
+						assign_filename_for_entity_scene_id(child_duplicate_node, entity_scene_id)
 				else:
 					child_duplicate_node.set_scene_file_path("")
 		else:
@@ -870,14 +870,15 @@ func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 			duplicate_node.entity_instance_list[i].parent_id = entity_parent_index
 			duplicate_node.entity_instance_list[i].transform = entity.get_transform()
 			var valid_filenames: Array = get_valid_filenames(entity.get_scene_file_path(), validator, [])
-			var entity_index:int = find_entity_id_from_filenames(valid_filenames)
-			duplicate_node.entity_instance_list[i].entity_id = entity_index
+			var entity_scene_index: int = find_entity_scene_id_from_filenames(valid_filenames)
+			
+			duplicate_node.entity_instance_list[i].scene_id = entity_scene_index
 			
 			var properties:Dictionary = {}
 			var nodepath: NodePath = entity.get("simulation_logic_node_path")
 			var simulation_logic_node: Node = entity.get_node_or_null(nodepath)
 			if simulation_logic_node:
-				var property_list: Array = entity_node_const.get_logic_node_properties(simulation_logic_node)
+				var property_list: Array = entity_node_const.get_custom_logic_node_properties(simulation_logic_node)
 				for property in property_list:
 					var prop = simulation_logic_node.get(property["name"])
 					if prop is Resource:
