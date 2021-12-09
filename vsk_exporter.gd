@@ -888,6 +888,14 @@ func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 			
 			duplicate_node.entity_instance_properties_list.push_back(properties)
 			duplicate_node.entity_instance_list[i].properties_id = i
+			
+		# Now delete all the original map entities, since we've indexed them already
+		for i in range(0, dictionary["entity_nodes"].size()):
+			var entity: Node = dictionary["entity_nodes"][i]
+			entity.queue_free()
+			var parent: Node = entity.get_parent()
+			if parent:
+				parent.remove_child(entity)
 
 		print("Packing map...")
 		
