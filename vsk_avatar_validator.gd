@@ -171,7 +171,7 @@ func is_script_valid_for_resource(p_script: Script):
 		return false
 
 func is_node_type_valid(p_node : Node, p_child_of_canvas: bool) -> bool:
-	if is_node_type_string_valid(p_node, p_child_of_canvas):
+	if is_node_type_string_valid(p_node.get_class(), p_child_of_canvas):
 		if !is_editor_only(p_node):
 			return true
 	return false
