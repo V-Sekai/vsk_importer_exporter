@@ -855,10 +855,10 @@ func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
 
 		print("Add entity nodes to instantiate list...")
 		for _i in range(0, dictionary["entity_nodes"].size()):
-			var map_entity_instance: VSKMapEntityInstance = VSKMapEntityInstance.new()
-			map_entity_instance.resource_local_to_scene = true
-			map_entity_instance.resource_path = ""
-			duplicate_node.entity_instance_list.push_back(map_entity_instance)
+			var map_entity_instance_record: VSKMapEntityInstanceRecord = VSKMapEntityInstanceRecord.new()
+			map_entity_instance_record.resource_local_to_scene = true
+			map_entity_instance_record.resource_path = ""
+			duplicate_node.entity_instance_list.push_back(map_entity_instance_record)
 			
 		print("Caching map resources...")
 		for i in range(0, dictionary["entity_nodes"].size()):
