@@ -107,6 +107,7 @@ var valid_resource_whitelist = {
 	"Mesh": Mesh,
 	"MeshLibrary": MeshLibrary,
 	"MeshTexture": MeshTexture,
+	"NavigationMesh": NavigationMesh,
 	"NoiseTexture": NoiseTexture,
 	"PackedScene": PackedScene,
 	"PhysicalSkyMaterial": PhysicalSkyMaterial,
@@ -136,7 +137,6 @@ var valid_resource_whitelist = {
 	"ViewportTexture": ViewportTexture,
 	"VoxelGIData": VoxelGIData,
 	"WorldBoundaryShape3D": WorldBoundaryShape3D,
-	"NavigationMesh": NavigationMesh,
 }
 
 ################
@@ -207,25 +207,26 @@ func is_script_valid_for_resource(p_script: Script):
 		return false
 
 func is_node_type_valid(p_node: Node, p_child_of_canvas: bool) -> bool:
-	if valid_node_whitelist.has(p_node.get_class()) or valid_canvas_node_whitelist.has(p_node.get_class()):
+	if is_node_type_string_valid(p_node.get_class(), p_child_of_canvas):
 		if !is_editor_only(p_node):
 			return true
+			
 	push_warning("Validator: Unknown node type " + str(p_node.get_class()) + " (canvas " + str(p_child_of_canvas) + ")")
 	return false
 	
 func is_node_type_string_valid(p_class_str: String, p_child_of_canvas: bool) -> bool:
-	if valid_canvas_node_whitelist.has(p_class_str) or valid_node_whitelist.has(p_class_str):
-		return true
-	#if p_child_of_canvas:
-	#	return valid_canvas_node_whitelist.has(p_class_str)
-	#else:
-	#	return valid_node_whitelist.has(p_class_str)
+	if p_child_of_canvas:
+		return valid_canvas_node_whitelist.has(p_class_str)
+	else:
+		return valid_node_whitelist.has(p_class_str)
+		
 	push_warning("Validator: Unknown node type string " + p_class_str + " (canvas " + str(p_child_of_canvas) + ")")
 	return false
 
 func is_resource_type_valid(p_resource: Resource) -> bool:
 	if valid_resource_whitelist.has(p_resource.get_class()):
 		return true
+		
 	push_warning("Validator: Unknown resource type " + str(p_resource.get_class()))
 	return false
 
