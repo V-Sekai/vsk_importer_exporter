@@ -109,6 +109,7 @@ var valid_resource_whitelist = {
 	"MeshTexture": MeshTexture,
 	"NavigationMesh": NavigationMesh,
 	"NoiseTexture": NoiseTexture,
+	"ORMMaterial3D": ORMMaterial3D,
 	"PackedScene": PackedScene,
 	"PhysicalSkyMaterial": PhysicalSkyMaterial,
 	"PanoramaSkyMaterial": PanoramaSkyMaterial,

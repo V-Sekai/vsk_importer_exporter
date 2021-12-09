@@ -83,6 +83,7 @@ var valid_resource_whitelist = {
 	"MeshLibrary": MeshLibrary,
 	"MeshTexture": MeshTexture,
 	"NoiseTexture": NoiseTexture,
+	"ORMMaterial3D": ORMMaterial3D,
 	"PanoramaSkyMaterial": PanoramaSkyMaterial,
 	"PhysicalSkyMaterial": PhysicalSkyMaterial,
 	"ProceduralSkyMaterial": ProceduralSkyMaterial,
