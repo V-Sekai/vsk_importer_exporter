@@ -44,7 +44,6 @@ var valid_node_whitelist = {
 	"PhysicsBody3D": PhysicsBody3D,
 	"PinJoint3D": PinJoint3D,
 	"Position3D": Position3D,
-	"ProximityGroup3D": ProximityGroup3D,
 	"RayCast3D": RayCast3D,
 	"RigidDynamicBody3D": RigidDynamicBody3D,
 	"RemoteTransform3D": RemoteTransform3D,
