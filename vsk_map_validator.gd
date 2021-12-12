@@ -55,6 +55,7 @@ var valid_node_whitelist = {
 	"VisualInstance3D": VisualInstance3D,
 	"VoxelGI": VoxelGI,
 	"WorldEnvironment": WorldEnvironment,
+	"OccluderInstance3D": OccluderInstance3D,
 }
 
 # TODO: please fill in the missing nodes
