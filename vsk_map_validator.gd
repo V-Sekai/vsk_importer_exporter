@@ -138,6 +138,7 @@ var valid_resource_whitelist = {
 	"ViewportTexture": ViewportTexture,
 	"VoxelGIData": VoxelGIData,
 	"WorldBoundaryShape3D": WorldBoundaryShape3D,
+	"Occluder3D": Occluder3D,
 }
 
 ################
