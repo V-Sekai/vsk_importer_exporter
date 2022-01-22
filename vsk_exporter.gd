@@ -612,7 +612,7 @@ static func _fix_humanoid_skeleton(
 			push_error("Avatar missing mouth. Please assign one in the avatar defintion!")
 			mouth_node = Node3D.new()
 			mouth_node.name = "AutoMouthPosition"
-			eye_node.get_parent().add_child(mouth_node)
+			eye_node.get_parent().add_child(mouth_node, true)
 			mouth_node.transform = eye_node.transform
 			p_node.mouth_transform_node_path = p_node.get_path_to(mouth_node)
 		mouth_head_id = evaluate_meta_spatial(p_node, p_node._skeleton_node, p_node.humanoid_data, mouth_node, "head_bone_name")
@@ -668,7 +668,7 @@ static func _fix_humanoid_skeleton(
 		if eye_spatial:
 			print("Assigning Eye...")
 			eye_spatial.set_name("Eye")
-			p_node.add_child(eye_spatial)
+			p_node.add_child(eye_spatial, true)
 			eye_spatial.owner = p_node
 			p_node.eye_transform_node_path = p_node.get_path_to(eye_spatial)
 			
@@ -680,7 +680,7 @@ static func _fix_humanoid_skeleton(
 		if mouth_spatial:
 			print("Assigning Mouth...")
 			mouth_spatial.set_name("Mouth")
-			p_node.add_child(mouth_spatial)
+			p_node.add_child(mouth_spatial, true)
 			mouth_spatial.owner = p_node
 			p_node.mouth_transform_node_path = p_node.get_path_to(mouth_spatial)
 			
@@ -752,7 +752,7 @@ func create_packed_scene_for_avatar(p_root: Node,\
 	
 	var duplicate_node: Node = dictionary["node"]
 	if duplicate_node:
-		p_root.add_child(duplicate_node)
+		p_root.add_child(duplicate_node, true)
 		
 		# Replace the node with lighter script with the metadata removed
 		duplicate_node = convert_to_runtime_user_content(duplicate_node, avatar_definition_runtime_const)
