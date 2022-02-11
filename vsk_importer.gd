@@ -13,25 +13,25 @@ const TYPE_INSTANCE = 0x7fffffff
 const FLAG_INSTANCE_IS_PLACEHOLDER = (1 << 30)
 const FLAG_MASK = (1 << 24) - 1
 
-class  ImporterResult :
-	const OK=0
-	const FAILED=1
-	const NULL_PACKED_SCENE=2
-	const READ_FAIL=3
-	const HAS_NODE_GROUPS=4
-	const FAILED_TO_CREATE_TREE=5
-	const INVALID_ENTITY_PATH=6
-	const UNSAFE_NODEPATH=7
-	const SCRIPT_ON_INSTANCE_NODE=8
-	const INVALID_ROOT_SCRIPT=9
-	const INVALID_CHILD_SCRIPT=10
-	const RECURSIVE_CANVAS=11
-	const INVALID_NODE_CLASS=12
-	const INVALID_ANIMATION_PLAYER_ROOT=13
-	const INVALID_METHOD_TRACK=14
-	const INVALID_VALUE_TRACK=15
-	const INVALID_TRACK_PATH=16
-
+enum ImporterResult {
+	OK,
+	FAILED,
+	NULL_PACKED_SCENE,
+	READ_FAIL,
+	HAS_NODE_GROUPS,
+	FAILED_TO_CREATE_TREE,
+	INVALID_ENTITY_PATH,
+	UNSAFE_NODEPATH,
+	SCRIPT_ON_INSTANCE_NODE,
+	INVALID_ROOT_SCRIPT,
+	INVALID_CHILD_SCRIPT,
+	RECURSIVE_CANVAS,
+	INVALID_NODE_CLASS,
+	INVALID_ANIMATION_PLAYER_ROOT,
+	INVALID_METHOD_TRACK,
+	INVALID_VALUE_TRACK,
+	INVALID_TRACK_PATH,
+}
 
 class RefNode:
 	extends RefCounted
@@ -54,10 +54,62 @@ class NodeData:
 	var instance_id: int = -1
 	var properties: Array = []
 	var groups: Array = []
+	
+static func get_string_for_importer_result(p_importer_result: ImporterResult) -> String:
+	match p_importer_result:
+		ImporterResult.OK:
+			return "OK"
+		ImporterResult.FAILED:
+			return "FAILED"
+		ImporterResult.NULL_PACKED_SCENE:
+			return "NULL_PACKED_SCENE"
+		ImporterResult.READ_FAIL:
+			return "READ_FAIL"
+		ImporterResult.HAS_NODE_GROUPS:
+			return "HAS_NODE_GROUPS"
+		ImporterResult.FAILED_TO_CREATE_TREE:
+			return "FAILED_TO_CREATE_TREE"
+		ImporterResult.INVALID_ENTITY_PATH:
+			return "INVALID_ENTITY_PATH"
+		ImporterResult.UNSAFE_NODEPATH:
+			return "UNSAFE_NODEPATH"
+		ImporterResult.SCRIPT_ON_INSTANCE_NODE:
+			return "SCRIPT_ON_INSTANCE_NODE"
+		ImporterResult.INVALID_ROOT_SCRIPT:
+			return "INVALID_ROOT_SCRIPT"
+		ImporterResult.INVALID_CHILD_SCRIPT:
+			return "INVALID_CHILD_SCRIPT"
+		ImporterResult.RECURSIVE_CANVAS:
+			return "RECURSIVE_CANVAS"
+		ImporterResult.INVALID_NODE_CLASS:
+			return "INVALID_NODE_CLASS"
+		ImporterResult.INVALID_ANIMATION_PLAYER_ROOT:
+			return "INVALID_ANIMATION_PLAYER_ROOT"
+		ImporterResult.INVALID_METHOD_TRACK:
+			return "INVALID_METHOD_TRACK"
+		ImporterResult.INVALID_VALUE_TRACK:
+			return "INVALID_VALUE_TRACK"
+		ImporterResult.INVALID_TRACK_PATH:
+			return "INVALID_TRACK_PATH"
+		_:
+			return "UNKNOWN_ERROR"
+	
+static func create_path_from_root_to_node(p_node: RefNode) -> String:
+	var current_node: RefNode = p_node
+	var path_string = ""
+	while(current_node):
+		if path_string.is_empty():
+			path_string = current_node.name
+		else:
+			path_string = current_node.name + "/" + path_string
+		
+		current_node = current_node.parent
+		
+	return path_string
 
 # This function attempts to walk the RefTree to make sure a nodepath is not
 # breaking out of the sandbox
-static func get_ref_node_from_relative_path(p_node: RefNode, p_path: NodePath):
+static func get_ref_node_from_relative_path(p_node: RefNode, p_path: NodePath) -> RefNode:
 	var nodepath: NodePath = p_path
 	
 	var root: RefNode = null
@@ -94,13 +146,13 @@ static func get_ref_node_from_relative_path(p_node: RefNode, p_path: NodePath):
 
 	return current
 
-class  RefNodeType :
-	const OTHER=0
-	const ANIMATION_PLAYER=1
-	const MESH_INSTANCE=2
+enum RefNodeType {
+	OTHER = 0,
+	ANIMATION_PLAYER = 1,
+	MESH_INSTANCE = 2
+}
 
-
-static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validator: RefCounted) -> int: # validator_const
+static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validator: RefCounted) -> Dictionary: # validator_const
 	# Special-case handling code for animation players
 	var ref_node_type: int = RefNodeType.OTHER
 	var skip_type_check: bool = false
@@ -115,12 +167,19 @@ static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validato
 			skip_type_check = true
 			is_instance = true
 		else:
-			return ImporterResult.INVALID_ENTITY_PATH
+			return {
+				"code":ImporterResult.INVALID_ENTITY_PATH,
+				"info":"Attempted to instance a none entity on node '{node_path}'".format(
+					{"node_path":create_path_from_root_to_node(p_ref_branch)}
+				)
+			}
 	
 	match p_ref_branch.class_str:
 		"AnimationPlayer":
 			ref_node_type = RefNodeType.ANIMATION_PLAYER
 			animation_player_ref_node = p_ref_branch.parent
+	
+	var animation_node_root_path: NodePath = NodePath()
 	
 	for property in p_ref_branch.properties:
 		var property_name = property["name"]
@@ -131,20 +190,50 @@ static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validato
 		if property_value is NodePath:
 			var ref_node_path_target: RefNode = get_ref_node_from_relative_path(p_ref_branch, property_value)
 			if ref_node_path_target == null:
-				return ImporterResult.UNSAFE_NODEPATH
+				return {
+					"code":ImporterResult.UNSAFE_NODEPATH,
+					"info":"Unsafe node path on node: '{node_path}', property:'{property}', path:'{value}'".format(
+						{
+							"node_path":create_path_from_root_to_node(p_ref_branch),
+							"property":property_name,
+							"value":str(property_value)
+						}
+					)
+				}		
 				
 			if ref_node_type == RefNodeType.ANIMATION_PLAYER:
 				if property_name == "root_node":
 					animation_player_ref_node = ref_node_path_target
+					animation_node_root_path = property_value
+					
 		elif property_value is Script:
 			if property_name == "script":
 				if is_instance:
-					return ImporterResult.SCRIPT_ON_INSTANCE_NODE
+					return {
+						"code":ImporterResult.SCRIPT_ON_INSTANCE_NODE,
+						"info":"Script assigned to instance node
+							node: '{node_path}',
+							script_path: '{script_path}'"
+							.format(
+							{
+								"node_path":create_path_from_root_to_node(p_ref_branch),
+								"script_path":property_value.resource_path
+							}
+						)
+					}	
 				
 				if p_ref_branch.parent == null:
 					# Check if the script is valid for the root node
 					if !p_validator.is_script_valid_for_root(property_value, p_ref_branch.class_str):
-						return ImporterResult.INVALID_ROOT_SCRIPT
+						return {
+							"code":ImporterResult.INVALID_ROOT_SCRIPT,
+							"info":"Invalid script for root node: '{node_path}', script_path: '{script_path}'".format(
+								{
+									"node_path":create_path_from_root_to_node(p_ref_branch),
+									"script_path":property_value.resource_path
+								}
+							)
+						}
 					else:
 						skip_type_check = true
 				else:
@@ -155,14 +244,29 @@ static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validato
 					# Check if this object is a canvas
 					elif p_validator.is_valid_canvas_3d(property_value, p_ref_branch.class_str):
 						if p_canvas:
-							return ImporterResult.RECURSIVE_CANVAS
+							return {
+								"code":ImporterResult.RECURSIVE_CANVAS,
+								"info":"Recursive canvas detected in '{node_path}'".format(
+									{
+										"node_path":create_path_from_root_to_node(p_ref_branch),
+									}
+								)
+							}
 						else:
 							children_belong_to_canvas = true
 							skip_type_check = true
 					else:
 						# Check if it's another valid script for a child node
 						if !p_validator.is_script_valid_for_children(property_value, p_ref_branch.class_str):
-							return ImporterResult.INVALID_CHILD_SCRIPT
+							return {
+								"code":ImporterResult.INVALID_CHILD_SCRIPT,
+								"info":"Invalid script for for child node: '{node_path}', script_path: '{script_path}'".format(
+									{
+										"node_path":create_path_from_root_to_node(p_ref_branch),
+										"script_path":property_value.resource_path
+									}
+								)
+							}
 						else:
 							skip_type_check = true
 						
@@ -173,12 +277,28 @@ static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validato
 	# Okay, with that information, make sure the node type itself is valid
 	if !skip_type_check:
 		if !p_validator.is_node_type_string_valid(p_ref_branch.class_str, p_canvas):
-			return ImporterResult.INVALID_NODE_CLASS
-			
+				return {
+					"code":ImporterResult.INVALID_NODE_CLASS,
+					"info":"Invalid node class '{class_name}' in node '{node_path}'".format(
+						{
+							"node_path":create_path_from_root_to_node(p_ref_branch),
+							"class_name":p_ref_branch.class_str
+						}
+					)
+				}
+
 	for animation in animations:
 		# If the animation player root node is null, it is not a secure path
 		if !animation_player_ref_node:
-			return ImporterResult.INVALID_ANIMATION_PLAYER_ROOT
+			return {
+				"code":ImporterResult.INVALID_ANIMATION_PLAYER_ROOT,
+				"info":"Invalid root node for animation player '{node_path}', with path {root_path}".format(
+					{
+						"node_path":create_path_from_root_to_node(p_ref_branch),
+						"root_path":str(animation_node_root_path)
+					}
+				)
+			}
 			
 		# Now, loop through all the tracks
 		var track_count: int = animation.get_track_count()
@@ -188,29 +308,55 @@ static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validato
 			
 			var track_ref_node: RefNode = get_ref_node_from_relative_path(animation_player_ref_node, track_path)
 			if !track_ref_node:
-				return ImporterResult.INVALID_TRACK_PATH
+				return {
+					"code":ImporterResult.INVALID_TRACK_PATH,
+					"info":"Invalid track_path for animation player '{node_path}', with path {track_path}".format(
+						{
+							"node_path":create_path_from_root_to_node(p_ref_branch),
+							"track_path":str(track_path)
+						}
+					)
+				}
 			
 			var track_type_int: int = animation.track_get_type(i)
 			
 			# Method and value tracks are currently banned until they can
 			# be properly validated for safety
 			if track_type_int == Animation.TYPE_METHOD:
-				return ImporterResult.INVALID_METHOD_TRACK
+				return {
+					"code":ImporterResult.INVALID_METHOD_TRACK,
+					"info":
+						"Attempted to implement method track on '{node_path}', with path {track_path}.\nNot method tracks are current allowed until they can be implemented safely".format(
+						{
+							"node_path":create_path_from_root_to_node(p_ref_branch),
+							"track_path":str(track_path)
+						}
+					)
+				}
 			elif track_type_int == Animation.TYPE_VALUE:
 				if !p_validator.validate_value_track(
 					track_path.get_concatenated_subnames(),
 					track_ref_node.class_str):
-					return ImporterResult.INVALID_VALUE_TRACK
+					return {
+						"code":ImporterResult.INVALID_VALUE_TRACK,
+						"info":"Attempted to implement value track on '{node_path}', with path {track_path}".format(
+							{
+								"node_path":create_path_from_root_to_node(p_ref_branch),
+								"track_path":str(track_path)
+							}
+						)
+					}
 			
 	for child_ref_node in p_ref_branch.children:
-		var result: int = scan_ref_node_tree(
+		var result: Dictionary = scan_ref_node_tree(
 			child_ref_node,
 			children_belong_to_canvas,
 			p_validator)
-		if result != ImporterResult.OK:
+			
+		if result["code"] != ImporterResult.OK:
 			return result
 		
-	return ImporterResult.OK
+	return {"code":ImporterResult.OK, "info":""}
 
 # Build a node tree of RefNodes and return the root
 static func build_ref_node_tree(
@@ -302,9 +448,9 @@ static func sanitise_packed_scene(
 	) -> Dictionary: # validator_const
 
 	if p_packed_scene == null:
-		return {"packed_scene":null, "result":ImporterResult.NULL_PACKED_SCENE}
+		return {"packed_scene":null, "result":{"code":ImporterResult.NULL_PACKED_SCENE, "info":""}}
 
-	var result: int = ImporterResult.OK
+	var result: Dictionary = {"code":ImporterResult.OK, "info":""}
 
 	var packed_scene_bundle: Dictionary = p_packed_scene._get_bundled_scene()
 	var node_data_array: Array = []
@@ -320,21 +466,21 @@ static func sanitise_packed_scene(
 			if snode_reader.idx != -1:
 				nd.parent_id = snode_reader.result
 			else:
-				result = ImporterResult.READ_FAIL
+				result = {"code":ImporterResult.READ_FAIL, "info":"Failed to read parent_id"}
 				break
 
 			snode_reader = reader_snode(snodes, snode_reader)
 			if snode_reader.idx != -1:
 				nd.owner_id = snode_reader.result
 			else:
-				result = ImporterResult.READ_FAIL
+				result = {"code":ImporterResult.READ_FAIL, "info":"Failed to read owner_id"}
 				break
 
 			snode_reader = reader_snode(snodes, snode_reader)
 			if snode_reader.idx != -1:
 				nd.type_id = snode_reader.result
 			else:
-				result = ImporterResult.READ_FAIL
+				result = {"code":ImporterResult.READ_FAIL, "info":"Failed to read type_id"}
 				break
 
 			var name_index: int = -1
@@ -344,14 +490,14 @@ static func sanitise_packed_scene(
 				nd.name_id = name_index & ((1 << NAME_INDEX_BITS) - 1)
 				nd.index_id = (name_index >> NAME_INDEX_BITS) - 1
 			else:
-				result = ImporterResult.READ_FAIL
+				result = {"code":ImporterResult.READ_FAIL, "info":"Failed to read name_id/index_id"}
 				break
 
 			snode_reader = reader_snode(snodes, snode_reader)
 			if snode_reader.idx != -1:
 				nd.instance_id = snode_reader.result
 			else:
-				result = ImporterResult.READ_FAIL
+				result = {"code":ImporterResult.READ_FAIL, "info":"Faild to read instance_id"}
 				break
 
 
@@ -360,7 +506,7 @@ static func sanitise_packed_scene(
 			if snode_reader.idx != -1:
 				property_count = snode_reader.result
 			else:
-				result = ImporterResult.READ_FAIL
+				result = {"code":ImporterResult.READ_FAIL, "info":"Failed to read property_count"}
 				break
 
 
@@ -370,7 +516,7 @@ static func sanitise_packed_scene(
 				if snode_reader.idx != -1:
 					name_id = snode_reader.result
 				else:
-					result = ImporterResult.READ_FAIL
+					result = {"code":ImporterResult.READ_FAIL, "info":"Failed to read name_id"}
 					break
 					
 				var value_id: int = -1
@@ -378,12 +524,12 @@ static func sanitise_packed_scene(
 				if snode_reader.idx != -1:
 					value_id = snode_reader.result
 				else:
-					result = ImporterResult.READ_FAIL
+					result = {"code":ImporterResult.READ_FAIL, "info":"Failed to read name_id"}
 					break
 					
 				nd.properties.append({"name": name_id, "value": value_id})
 				
-			if result != ImporterResult.OK:
+			if result["code"] != ImporterResult.OK:
 				break
 			
 			var group_count = 0
@@ -391,10 +537,10 @@ static func sanitise_packed_scene(
 			if snode_reader.idx != -1:
 				group_count = snode_reader.result
 				if group_count > 0:
-					result = ImporterResult.HAS_NODE_GROUPS
+					result = {"code":ImporterResult.HAS_NODE_GROUPS, "info":"Packed scene contains node groups"}
 					break
 			else:
-				result = ImporterResult.READ_FAIL
+				result = {"code":ImporterResult.READ_FAIL, "info":"Failed to read group_count"}
 				break
 			
 			
@@ -402,12 +548,12 @@ static func sanitise_packed_scene(
 			for _j in range(0, group_count):
 				snode_reader = reader_snode(snodes, snode_reader)
 				if snode_reader.idx == -1:
-					result = ImporterResult.READ_FAIL
+					result = {"code":ImporterResult.READ_FAIL, "info":"Failed to read groups"}
 					break
 			
 			node_data_array.push_back(nd)
 	
-	if result == ImporterResult.OK:
+	if result["code"] == ImporterResult.OK:
 		var ref_root_node : RefNode = build_ref_node_tree(
 			node_data_array,
 			packed_scene_bundle["names"],
@@ -417,12 +563,15 @@ static func sanitise_packed_scene(
 		)
 		
 		if ref_root_node == null:
-			result = ImporterResult.FAILED_TO_CREATE_TREE
+			result = {
+				"code":ImporterResult.FAILED_TO_CREATE_TREE,
+				"info":"Could not construct a reference tree from the packed scene bundle"
+			}
 		else:
 			result = scan_ref_node_tree(ref_root_node, false, p_validator)
 
 	var resulting_packed_scene: PackedScene = null
-	if result == ImporterResult.OK:
+	if result["code"] == ImporterResult.OK:
 		resulting_packed_scene = p_packed_scene
 		
 	return {"packed_scene":resulting_packed_scene, "result":result}
