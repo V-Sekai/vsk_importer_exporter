@@ -781,12 +781,13 @@ func create_packed_scene_for_avatar(p_root: Node,\
 					null)
 					
 			if err == avatar_callback_const.AVATAR_OK:
-				var mesh_instances: Array = avatar_lib_const.find_mesh_instances_for_avatar_skeleton(p_root, p_root._skeleton_node, [])
+				var mesh_instances: Array = avatar_lib_const.find_mesh_instances_for_avatar_skeleton(duplicate_node, duplicate_node._skeleton_node, [])
 				var skins: Array = []
 				
 				for mesh_instance in mesh_instances:
 					if mesh_instance.skin:
-						skins.push_back(mesh_instance.skin.duplicate())
+						# Warning: if the Skin was not duplicated, this could corrupt the original
+						skins.push_back(mesh_instance.skin)
 						
 					else:
 						skins.push_back(null)
