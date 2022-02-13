@@ -581,7 +581,10 @@ static func sanitise_packed_scene_for_map(p_packed_scene: PackedScene) -> Dictio
 	#var validator: validator_map_const = validator_map_const.new()
 	#return sanitise_packed_scene(p_packed_scene, validator)
 	
-	return {"packed_scene":p_packed_scene, "result":ImporterResult.OK}
+	push_warning("Map validation is currently disabled.")
+	var result: Dictionary = {"code":ImporterResult.OK, "info":""}
+	var ret: Dictionary = {"packed_scene":p_packed_scene, "result":result}
+	return ret
 
 func sanitise_packed_scene_for_avatar(p_packed_scene: PackedScene) -> Dictionary:
 	print("Sanitising avatar...")
