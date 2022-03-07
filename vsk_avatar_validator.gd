@@ -102,7 +102,7 @@ var valid_resource_whitelist = {
 	"StandardMaterial3D": StandardMaterial3D,
 	"SphereMesh": SphereMesh,
 	"SphereShape3D": SphereShape3D,
-	"StreamTexture3D": StreamTexture3D,
+	"CompressedTexture2D": CompressedTexture2D,
 	"Texture2D": Texture2D,
 	"Texture2DArray": Texture2DArray,
 	"Texture3D": Texture3D,

@@ -365,7 +365,7 @@ func sanitise_node(
 	return p_visited
 	
 func convert_object(p_table: Dictionary, p_subobject: Object, p_root: Node, p_validator: RefCounted) -> Dictionary:
-	if p_subobject is StreamTexture2D:
+	if p_subobject is CompressedTexture2D:
 		print("Texture2D %s processing..." % p_subobject.resource_path)
 		var image: Image = p_subobject.get_image()
 			
