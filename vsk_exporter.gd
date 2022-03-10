@@ -1010,16 +1010,16 @@ func _link_vsk_editor(p_node: Node) -> void:
 	vsk_editor = p_node
 
 	if vsk_editor and do_connect:
-		if vsk_editor.connect("user_content_submission_requested", Callable(self, "_user_content_submission_requested"), [], CONNECT_DEFERRED) != OK:
+		if vsk_editor.user_content_submission_requested.connect(self._user_content_submission_requested, CONNECT_DEFERRED) != OK:
 			printerr("Could not connect signal 'user_content_submission_requested'")
-		if vsk_editor.connect("user_content_submission_cancelled", Callable(self, "_user_content_submission_cancelled"), [], CONNECT_DEFERRED) != OK:
+		if vsk_editor.user_content_submission_cancelled.connect(self._user_content_submission_cancelled, CONNECT_DEFERRED) != OK:
 			printerr("Could not connect signal 'user_content_submission_cancelled'")
 	
 func _unlink_vsk_editor() -> void:
 	print("_unlink_vsk_editor")
 	
-	vsk_editor.disconnect("user_content_submission_requested", Callable(self, "_user_content_submission_requested"))
-	vsk_editor.disconnect("user_content_submission_cancelled", Callable(self, "_user_content_submission_cancelled"))
+	vsk_editor.user_content_submission_requested.disconnect(self._user_content_submission_requested)
+	vsk_editor.user_content_submission_cancelled.disconnect(self._user_content_submission_cancelled)
 	
 	vsk_editor = null
 	
@@ -1040,8 +1040,8 @@ func _node_removed(p_node: Node) -> void:
 
 func _ready():
 	if Engine.is_editor_hint():
-		assert(get_tree().connect("node_added", Callable(self, "_node_added")) == OK)
-		assert(get_tree().connect("node_removed", Callable(self, "_node_removed")) == OK)
+		assert(get_tree().node_added.connect(self._node_added) == OK)
+		assert(get_tree().node_removed.connect(self._node_removed) == OK)
 		var VSKEditor = null		
 		_link_vsk_editor(VSKEditor)
 		
