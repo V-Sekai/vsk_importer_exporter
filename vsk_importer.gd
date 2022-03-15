@@ -364,7 +364,7 @@ static func build_ref_node_tree(
 	p_names: PackedStringArray,
 	p_variants: Array,
 	p_node_paths: PackedStringArray,
-	p_editable_instances: Array
+	_p_editable_instances: Array
 ):
 	var root_ref_node: RefNode = null
 	var ref_nodes: Array = []

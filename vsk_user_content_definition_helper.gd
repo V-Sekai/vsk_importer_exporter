@@ -6,8 +6,8 @@ enum UserContentFormat {
 	MOBILE # Mobile class hardware, PVR compression, S3TC/ETC/2
 }
 
-static func common_set(p_node: Node, p_property, p_value) -> bool:
+static func common_set(_p_node: Node, _p_property, _p_value) -> bool:
 	return false
 	
-static func common_get(p_node: Node, p_property):
+static func common_get(_p_node: Node, _p_property):
 	return null

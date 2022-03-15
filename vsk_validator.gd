@@ -29,13 +29,13 @@ func is_scene_valid_for_root(p_script: Script) -> bool:
 	else:
 		return false
 
-func is_script_valid_for_root(p_script: Script, p_node_class: String) -> bool:
+func is_script_valid_for_root(p_script: Script, _p_node_class: String) -> bool:
 	if p_script == null:
 		return true
 	else:
 		return false
 
-func is_script_valid_for_children(p_script: Script, p_node_class: String) -> bool:
+func is_script_valid_for_children(p_script: Script, _p_node_class: String) -> bool:
 	if p_script == null:
 		return true
 	else:

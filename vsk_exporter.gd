@@ -833,7 +833,7 @@ func export_avatar(\
 ## Map
 ## 
 	
-func create_packed_scene_for_map(p_root, p_node) -> Dictionary:
+func create_packed_scene_for_map(_p_root, p_node) -> Dictionary:
 	var validator = validator_map_const.new()
 		
 	print("Creating sanitised duplicate...")
