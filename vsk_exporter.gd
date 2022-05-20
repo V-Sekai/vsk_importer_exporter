@@ -540,13 +540,19 @@ func create_object_duplication_table_for_node(
 func create_sanitised_duplication(p_node: Node, p_validator: RefCounted) -> Dictionary:
 	var packed: PackedScene = PackedScene.new()
 	packed.pack(p_node)
+	print("Done packing. Now instantiate.")
 	var reference_node: Node = packed.instantiate()
 	#var reference_node: Node = p_node.duplicate()
 	
 	# Run any addons on a duplicate of the scene before anything else
 	reference_node = get_export_addon_interface().preprocess_scene(reference_node, p_validator)
-	
-	var duplicate_node: Node = reference_node.duplicate()
+	print("Create duplicate copy")
+
+	# Duplicate seems to cause trouble: most non-inherited nodes seem to fail with a "get_node" error.
+	###var duplicate_node: Node = reference_node.duplicate()
+	# SO! Instead of duplicate, we just create another copy by re-instantiating the same thing..
+	var duplicate_node: Node = packed.instantiate()
+	duplicate_node = get_export_addon_interface().preprocess_scene(duplicate_node, p_validator)
 
 	print("Creating duplication table...")
 	var duplication_table: Dictionary = create_object_duplication_table_for_node(
