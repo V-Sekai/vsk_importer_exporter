@@ -270,7 +270,7 @@ func sanitise_owner(
 	p_duplicate_node: Node,
 	p_reference_node: Node,
 	p_duplicate_root: Node,
-	p_reference_root: Node
+	_p_reference_root: Node
 	) -> void:
 	var reassign_owner: bool = false
 	
