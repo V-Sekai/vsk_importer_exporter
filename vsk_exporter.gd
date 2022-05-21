@@ -304,7 +304,7 @@ func sanitise_entity_children(
 	###
 	if p_duplicate_root.is_inside_tree():
 		for i in range(0, p_duplicate_node.get_child_count()):
-			var child_reference_node = null
+			var child_reference_node : Node = null
 			if p_reference_node:
 				if i < p_reference_node.get_child_count():
 					child_reference_node = p_reference_node.get_child(i)
