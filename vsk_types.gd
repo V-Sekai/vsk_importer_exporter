@@ -1,6 +1,7 @@
 extends RefCounted
 
-class  UserContentType :
-	const Avatar=0
-	const Map=1
-
+enum UserContentType {
+	Unknown = -1,
+	Avatar = 0,
+	Map = 1
+}
