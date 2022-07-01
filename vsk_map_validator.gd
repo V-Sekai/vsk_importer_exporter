@@ -7,6 +7,7 @@ var canvas_3d_anchor = load("res://addons/canvas_plane/canvas_3d_anchor.gd")
 var valid_node_whitelist = {
 	"AnimatedSprite3D": AnimatedSprite3D,
 	"AnimationPlayer": AnimationPlayer,
+	"AnimationTree": AnimationTree,
 	"Area3D": Area3D,
 	"AudioStreamPlayer": AudioStreamPlayer,
 	"AudioStreamPlayer3D": AudioStreamPlayer3D,
