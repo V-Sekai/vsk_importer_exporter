@@ -122,24 +122,60 @@ func sanitise_dictionary(
 	var new_dictionary: Dictionary = {}
 	if p_dictionary:
 		for key in p_dictionary.keys():
+			var value = p_dictionary[key]
+			
+			var new_key = null
+			var new_value = null
+			
+			# Sanitize the key
 			match typeof(key):
 				TYPE_ARRAY:
 					var result: Dictionary = sanitise_array(key, p_table, p_visited, p_root, p_validator)
 					p_visited = result["visited"]
-					new_dictionary[key] = result["array"]
+					new_key = key
 				TYPE_DICTIONARY:
 					var result: Dictionary = sanitise_dictionary(key, p_table, p_visited, p_root, p_validator)
 					p_visited = result["visited"]
-					new_dictionary[key] = result["dictionary"]
+					new_key = key
 				TYPE_OBJECT:
-					var subobject: Object = p_dictionary[key]
+					var subobject: Object = key
 					if subobject:
 						if p_table.has(subobject):
 							var duplicated_subobject: Object = p_table[subobject]
 							if subobject is Resource:
 								# If the resource isn't valid for this validator, remove it
 								if ! p_validator.is_resource_type_valid(subobject) or ! p_validator.is_script_valid_for_resource(subobject.get_script()):
-									print("property dictionary key %s is invalid" % str(key))
+									print("property dictionary key '%s' is invalid" % str(key))
+									duplicated_subobject = null
+							subobject = duplicated_subobject
+								
+						if subobject != null and p_visited["visited_nodes"].find(subobject) == -1:
+							p_visited = sanitise_object(subobject, p_table, p_visited, p_root, p_validator)
+						
+						# Set the new object
+						new_key = subobject
+				_:
+					new_key = key
+			
+			# Sanitize the value
+			match typeof(value):
+				TYPE_ARRAY:
+					var result: Dictionary = sanitise_array(value, p_table, p_visited, p_root, p_validator)
+					p_visited = result["visited"]
+					new_value = result["array"]
+				TYPE_DICTIONARY:
+					var result: Dictionary = sanitise_dictionary(value, p_table, p_visited, p_root, p_validator)
+					p_visited = result["visited"]
+					new_value = result["dictionary"]
+				TYPE_OBJECT:
+					var subobject: Object = value
+					if subobject:
+						if p_table.has(subobject):
+							var duplicated_subobject: Object = p_table[subobject]
+							if subobject is Resource:
+								# If the resource isn't valid for this validator, remove it
+								if ! p_validator.is_resource_type_valid(subobject) or ! p_validator.is_script_valid_for_resource(subobject.get_script()):
+									print("property dictionary value '%s' is invalid" % str(value))
 									duplicated_subobject = null
 							subobject = duplicated_subobject
 								
@@ -148,9 +184,12 @@ func sanitise_dictionary(
 							p_visited = sanitise_object(subobject, p_table, p_visited, p_root, p_validator)
 						
 						# Set the new object
-						new_dictionary[key] = subobject
+						new_value = subobject
 				_:
-					new_dictionary[key] = p_dictionary[key]
+					new_value = value
+				
+			new_dictionary[new_key] = new_value
+				
 						
 	return {"visited":p_visited, "dictionary":new_dictionary}
 
@@ -438,15 +477,18 @@ func create_object_duplication_table_for_dictionary(
 ) -> Dictionary:
 	if p_dictionary:
 		for key in p_dictionary.keys():
-			match typeof(key):
-				TYPE_ARRAY:
-					p_table = create_object_duplication_table_for_array(key, p_table, p_root, p_validator)
-				TYPE_DICTIONARY:
-					p_table = create_object_duplication_table_for_dictionary(key, p_table, p_root, p_validator)
-				TYPE_OBJECT:
-					var subobject: Object = p_dictionary[key]
-					if ! p_table.has(subobject):
-						p_table = convert_object(p_table, subobject, p_root, p_validator)
+			var value = p_dictionary[key]
+			
+			for element in [key, value]:
+				match typeof(element):
+					TYPE_ARRAY:
+						p_table = create_object_duplication_table_for_array(element, p_table, p_root, p_validator)
+					TYPE_DICTIONARY:
+						p_table = create_object_duplication_table_for_dictionary(element, p_table, p_root, p_validator)
+					TYPE_OBJECT:
+						var subobject: Object = element
+						if ! p_table.has(subobject):
+							p_table = convert_object(p_table, subobject, p_root, p_validator)
 
 	return p_table
 
