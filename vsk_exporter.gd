@@ -24,7 +24,6 @@ const avatar_definition_runtime_const = preload("res://addons/vsk_avatar/vsk_ava
 var map_definition = load("res://addons/vsk_map/vsk_map_definition.gd")
 var map_definition_runtime = load("res://addons/vsk_map/vsk_map_definition_runtime.gd")
 
-const avatar_fixer_const = preload("res://addons/vsk_avatar/avatar_fixer.gd")
 const bone_lib_const = preload("res://addons/vsk_avatar/bone_lib.gd")
 const node_util_const = preload("res://addons/gd_util/node_util.gd")
 
@@ -816,16 +815,7 @@ func create_packed_scene_for_avatar(p_root: Node,\
 		else:
 			err = avatar_callback_const.AVATAR_OK
 		
-		if err == avatar_callback_const.AVATAR_OK:
-			if has_humanoid_skeleton:
-				# Apply the avatar fixes
-				print("Applying avatar fixes")
-				err = avatar_fixer_const.fix_avatar(
-					duplicate_node,
-					duplicate_node._skeleton_node,
-					duplicate_node.humanoid_data,
-					null)
-					
+		if err == avatar_callback_const.AVATAR_OK:					
 			if err == avatar_callback_const.AVATAR_OK:
 				var mesh_instances: Array = avatar_lib_const.find_mesh_instances_for_avatar_skeleton(duplicate_node, duplicate_node._skeleton_node, [])
 				var skins: Array = []
