@@ -817,14 +817,14 @@ func create_packed_scene_for_avatar(p_root: Node,\
 			err = avatar_callback_const.AVATAR_OK
 		
 		if err == avatar_callback_const.AVATAR_OK:
-			if has_humanoid_skeleton:
-				# Apply the avatar fixes
-				print("Applying avatar fixes")
-				err = avatar_fixer_const.fix_avatar(
-					duplicate_node,
-					duplicate_node._skeleton_node,
-					duplicate_node.humanoid_data,
-					null)
+			#if has_humanoid_skeleton:
+			#	# Apply the avatar fixes
+			#	print("Applying avatar fixes")
+			#	err = avatar_fixer_const.fix_avatar(
+			#		duplicate_node,
+			#		duplicate_node._skeleton_node,
+			#		duplicate_node.humanoid_data,
+			#		null)
 					
 			if err == avatar_callback_const.AVATAR_OK:
 				var mesh_instances: Array = avatar_lib_const.find_mesh_instances_for_avatar_skeleton(duplicate_node, duplicate_node._skeleton_node, [])
