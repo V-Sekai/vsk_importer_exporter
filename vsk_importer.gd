@@ -577,23 +577,32 @@ static func sanitise_packed_scene(
 	return {"packed_scene":resulting_packed_scene, "result":result}
 
 static func sanitise_packed_scene_for_map(p_packed_scene: PackedScene) -> Dictionary:
-	print("Sanitising map...")
-	#var validator: validator_map_const = validator_map_const.new()
-	#return sanitise_packed_scene(p_packed_scene, validator)
-	
-	push_warning("Map validation is currently disabled.")
-	var result: Dictionary = {"code":ImporterResult.OK, "info":""}
-	var ret: Dictionary = {"packed_scene":p_packed_scene, "result":result}
-	return ret
+	if ProjectSettings.get_setting("ugc/config/sanitize_map_import"):
+		print("Sanitising map...")
+		var validator: validator_map_const = validator_map_const.new()
+		return sanitise_packed_scene(p_packed_scene, validator)
+	else:
+		push_warning("Map validation is currently disabled.")
+		var result: Dictionary = {"code":ImporterResult.OK, "info":""}
+		var ret: Dictionary = {"packed_scene":p_packed_scene, "result":result}
+		return ret
 
 func sanitise_packed_scene_for_avatar(p_packed_scene: PackedScene) -> Dictionary:
-	print("Sanitising avatar...")
-#	var validator = validator_avatar_const.new()
-#	return sanitise_packed_scene(p_packed_scene, validator)
-	push_warning("Avatar validation is currently disabled.")
-	var result: Dictionary = {"code":ImporterResult.OK, "info":""}
-	var ret: Dictionary = {"packed_scene":p_packed_scene, "result":result}
-	return ret
+	if ProjectSettings.get_setting("ugc/config/sanitize_avatar_import"):
+		print("Sanitising avatar...")
+		var validator = validator_avatar_const.new()
+		return sanitise_packed_scene(p_packed_scene, validator)
+	else:
+		push_warning("Avatar validation is currently disabled.")
+		var result: Dictionary = {"code":ImporterResult.OK, "info":""}
+		var ret: Dictionary = {"packed_scene":p_packed_scene, "result":result}
+		return ret
+
+func _ready() -> void:
+	if !ProjectSettings.has_setting("ugc/config/sanitize_avatar_import"):
+		ProjectSettings.set_setting("ugc/config/sanitize_avatar_import", true)
+	if !ProjectSettings.has_setting("ugc/config/sanitize_map_import"):
+		ProjectSettings.set_setting("ugc/config/sanitize_map_import", true)
 
 func setup() -> void:
 	pass

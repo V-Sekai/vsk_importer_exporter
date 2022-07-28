@@ -793,10 +793,16 @@ func create_packed_scene_for_avatar(p_root: Node,\
 	var packed_scene_export: PackedScene = null
 	var err: int = avatar_callback_const.AVATAR_FAILED
 	
-	var dictionary : Dictionary = create_sanitised_duplication(p_node,\
-	validator_avatar_const.new())
+	var duplicate_node: Node = null
+	if ProjectSettings.get_setting("ugc/config/sanitize_avatar_export"):
+		print("Creating sanitised duplicate...")
+		var dictionary : Dictionary = create_sanitised_duplication(p_node,\
+		validator_avatar_const.new())
 	
-	var duplicate_node: Node = dictionary["node"]
+		duplicate_node = dictionary["node"]
+	else:
+		duplicate_node = p_node.duplicate()
+		
 	if duplicate_node:
 		p_root.add_child(duplicate_node, true)
 		
@@ -880,15 +886,23 @@ func export_avatar(\
 ## 
 	
 func create_packed_scene_for_map(_p_root, p_node) -> Dictionary:
-	var validator = validator_map_const.new()
-		
-	print("Creating sanitised duplicate...")
-	var dictionary : Dictionary = create_sanitised_duplication(p_node, validator)
-	print("Done sanitised duplicate...")
-
-	var err: int = map_callback_const.MAP_FAILED
-
 	var packed_scene_export: PackedScene = null
+	var err: int = map_callback_const.MAP_FAILED
+	
+	var dictionary : Dictionary = {}
+	
+	var validator: validator_map_const = null
+	
+	if ProjectSettings.get_setting("ugc/config/sanitize_map_export"):
+		validator = validator_map_const.new()
+		
+		print("Creating sanitised duplicate...")
+		dictionary = create_sanitised_duplication(p_node, validator)
+		
+		print("Done sanitised duplicate...")
+	else:
+		dictionary = {"node":p_node.duplicate(), "entity_nodes":[]}
+	
 	var duplicate_node: Node = dictionary["node"]
 	
 	if duplicate_node:
@@ -1086,6 +1100,11 @@ func _node_removed(p_node: Node) -> void:
 
 func _ready():
 	if Engine.is_editor_hint():
+		if !ProjectSettings.has_setting("ugc/config/sanitize_avatar_export"):
+			ProjectSettings.set_setting("ugc/config/sanitize_avatar_export", true)
+		if !ProjectSettings.has_setting("ugc/config/sanitize_map_export"):
+			ProjectSettings.set_setting("ugc/config/sanitize_map_export", true)
+		
 		assert(get_tree().node_added.connect(self._node_added) == OK)
 		assert(get_tree().node_removed.connect(self._node_removed) == OK)
 		var VSKEditor = null		
