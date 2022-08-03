@@ -776,7 +776,7 @@ static func convert_to_runtime_user_content(p_node: Node, p_script: Script) -> N
 func save_user_content_resource(p_path: String, p_packed_scene: PackedScene) -> int:
 	# Uncomment to debug exported scene references.
 	# ResourceSaver.save(p_path.replace(".scn",".tscn"), p_packed_scene, ResourceSaver.FLAG_OMIT_EDITOR_PROPERTIES)
-	var ret = ResourceSaver.save(p_path, p_packed_scene, EXPORT_FLAGS)
+	var ret = ResourceSaver.save(p_packed_scene, p_path, EXPORT_FLAGS)
 	EditorPlugin.new().get_editor_interface().get_resource_filesystem().update_file(p_path)
 	EditorPlugin.new().get_editor_interface().get_resource_filesystem().scan()
 	return ret
