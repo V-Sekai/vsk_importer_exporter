@@ -24,7 +24,6 @@ const avatar_definition_runtime_const = preload("res://addons/vsk_avatar/vsk_ava
 var map_definition = load("res://addons/vsk_map/vsk_map_definition.gd")
 var map_definition_runtime = load("res://addons/vsk_map/vsk_map_definition_runtime.gd")
 
-const avatar_fixer_const = preload("res://addons/vsk_avatar/avatar_fixer.gd")
 const bone_lib_const = preload("res://addons/vsk_avatar/bone_lib.gd")
 const node_util_const = preload("res://addons/gd_util/node_util.gd")
 
@@ -626,12 +625,11 @@ static func get_offset_from_bone(p_global_transform: Transform3D, p_skeleton: Sk
 		
 	return Transform3D()
 	
-static func evaluate_meta_spatial(p_root: Node3D, p_skeleton: Node3D, p_humanoid_data: HumanoidData, p_meta: Node3D, p_humanoid_bone_name: String) -> int:
-	if p_meta and p_skeleton and p_humanoid_data:
+static func evaluate_meta_spatial(p_root: Node3D, p_skeleton: Node3D, p_meta: Node3D, p_humanoid_bone_name: String) -> int:
+	if p_meta and p_skeleton:
 		if p_root.is_ancestor_of(p_meta):
 			if p_meta != p_skeleton and p_meta != p_root:
-				var bone_name: String = p_humanoid_data.get(p_humanoid_bone_name)
-				return p_skeleton.find_bone(bone_name)
+				return p_skeleton.find_bone(p_humanoid_bone_name)
 				
 	return -1
 	
@@ -661,8 +659,8 @@ static func _fix_humanoid_skeleton(
 			eye_node.get_parent().add_child(mouth_node, true)
 			mouth_node.transform = eye_node.transform
 			p_node.mouth_transform_node_path = p_node.get_path_to(mouth_node)
-		mouth_head_id = evaluate_meta_spatial(p_node, p_node._skeleton_node, p_node.humanoid_data, mouth_node, "head_bone_name")
-		eye_head_id = evaluate_meta_spatial(p_node, p_node._skeleton_node, p_node.humanoid_data, eye_node, "head_bone_name")
+		mouth_head_id = evaluate_meta_spatial(p_node, p_node._skeleton_node, mouth_node, "head_bone_name")
+		eye_head_id = evaluate_meta_spatial(p_node, p_node._skeleton_node, eye_node, "head_bone_name")
 		
 		var skeleton_gt: Transform3D = node_util_const.get_relative_global_transform(p_root, p_node._skeleton_node)
 		
@@ -693,12 +691,12 @@ static func _fix_humanoid_skeleton(
 	## 	var ik_pose_output: Dictionary = {}
 	## 	if err == avatar_callback_const.AVATAR_OK:
 	## 		if p_ik_pose_fixer:
-	## 			ik_pose_output = p_ik_pose_fixer.setup_ik_t_pose(p_node, p_node._skeleton_node, p_node.humanoid_data, false)
+	## 			ik_pose_output = p_ik_pose_fixer.setup_ik_t_pose(p_node, p_node._skeleton_node, false)
 	## 			err = ik_pose_output["result"]
 	## 	
 	## 	if err == avatar_callback_const.AVATAR_OK:
 	## 		if p_rotation_fixer:
-	## 			err = p_rotation_fixer.fix_rotations(p_node, p_node._skeleton_node, p_node.humanoid_data, ik_pose_output["custom_bone_pose_array"])
+	## 			err = p_rotation_fixer.fix_rotations(p_node, p_node._skeleton_node, ik_pose_output["custom_bone_pose_array"])
 	## 	
 	## 	if err == avatar_callback_const.AVATAR_OK:
 	## 		if p_external_transform_fixer:
@@ -775,7 +773,7 @@ static func convert_to_runtime_user_content(p_node: Node, p_script: Script) -> N
 	
 func save_user_content_resource(p_path: String, p_packed_scene: PackedScene) -> int:
 	# Uncomment to debug exported scene references.
-	# ResourceSaver.save(p_path.replace(".scn",".tscn"), p_packed_scene, ResourceSaver.FLAG_OMIT_EDITOR_PROPERTIES)
+	# ResourceSaver.save(p_packed_scene, p_path.replace(".scn",".tscn"), ResourceSaver.FLAG_OMIT_EDITOR_PROPERTIES)
 	var ret = ResourceSaver.save(p_packed_scene, p_path, EXPORT_FLAGS)
 	EditorPlugin.new().get_editor_interface().get_resource_filesystem().update_file(p_path)
 	EditorPlugin.new().get_editor_interface().get_resource_filesystem().scan()
@@ -811,7 +809,7 @@ func create_packed_scene_for_avatar(p_root: Node,\
 		
 		var has_humanoid_skeleton: bool = false
 		
-		if duplicate_node._skeleton_node and duplicate_node.humanoid_data:
+		if duplicate_node._skeleton_node:
 			has_humanoid_skeleton = true
 			
 		
@@ -823,15 +821,6 @@ func create_packed_scene_for_avatar(p_root: Node,\
 			err = avatar_callback_const.AVATAR_OK
 		
 		if err == avatar_callback_const.AVATAR_OK:
-			#if has_humanoid_skeleton:
-			#	# Apply the avatar fixes
-			#	print("Applying avatar fixes")
-			#	err = avatar_fixer_const.fix_avatar(
-			#		duplicate_node,
-			#		duplicate_node._skeleton_node,
-			#		duplicate_node.humanoid_data,
-			#		null)
-					
 			if err == avatar_callback_const.AVATAR_OK:
 				var mesh_instances: Array = avatar_lib_const.find_mesh_instances_for_avatar_skeleton(duplicate_node, duplicate_node._skeleton_node, [])
 				var skins: Array = []
@@ -844,7 +833,7 @@ func create_packed_scene_for_avatar(p_root: Node,\
 					else:
 						skins.push_back(null)
 						
-				if bone_lib_const.rename_skeleton_to_humanoid_bones(duplicate_node._skeleton_node, duplicate_node.humanoid_data, skins, undo_redo):
+				if true: #bone_lib_const.rename_skeleton_to_humanoid_bones(duplicate_node._skeleton_node, skins, undo_redo):
 					packed_scene_export = PackedScene.new()
 					
 					duplicate_node.set_name(p_node.get_name()) # Reset name

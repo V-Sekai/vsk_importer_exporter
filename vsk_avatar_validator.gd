@@ -1,7 +1,6 @@
 @tool
 extends "res://addons/vsk_importer_exporter/vsk_validator.gd"
 
-const humanoid_data_const = preload("res://addons/vsk_avatar/humanoid_data.gd")
 const avatar_definition_const = preload("res://addons/vsk_avatar/vsk_avatar_definition.gd")
 const avatar_definition_runtime_const = preload("res://addons/vsk_avatar/vsk_avatar_definition_runtime.gd")
 
@@ -121,7 +120,6 @@ const valid_children_script_whitelist = [
 ]
 
 const valid_resource_script_whitelist = [
-	humanoid_data_const,
 	avatar_collidergroup_const,
 	avatar_springbone_const
 	]
