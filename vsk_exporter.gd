@@ -583,7 +583,6 @@ func create_sanitised_duplication(p_node: Node, p_validator: RefCounted) -> Dict
 	packed.pack(p_node)
 	print("Done packing. Now instantiate.")
 	var reference_node: Node = packed.instantiate()
-	#var reference_node: Node = p_node.duplicate()
 	
 	# Run any addons on a duplicate of the scene before anything else
 	reference_node = get_export_addon_interface().preprocess_scene(reference_node, p_validator)
