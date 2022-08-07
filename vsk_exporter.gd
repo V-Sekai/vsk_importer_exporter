@@ -785,8 +785,6 @@ func save_user_content_resource(p_path: String, p_packed_scene: PackedScene) -> 
 func create_packed_scene_for_avatar(p_root: Node,\
 	p_node: Node) -> Dictionary:
 	
-	var undo_redo = UndoRedo.new()
-	
 	var packed_scene_export: PackedScene = null
 	var err: int = avatar_callback_const.AVATAR_FAILED
 	
