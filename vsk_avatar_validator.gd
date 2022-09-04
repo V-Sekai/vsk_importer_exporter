@@ -42,9 +42,9 @@ var valid_node_whitelist = {
 	"PathFollow3D": PathFollow3D,
 	"PhysicsBody3D": PhysicsBody3D,
 	"PinJoint3D": PinJoint3D,
-	"Position3D": Position3D,
+	"Marker3D": Marker3D,
 	"RayCast3D": RayCast3D,
-	"RigidDynamicBody3D": RigidDynamicBody3D,
+	"RigidBody3D": RigidBody3D,
 	"RemoteTransform3D": RemoteTransform3D,
 	"SliderJoint3D": SliderJoint3D,
 	"Skeleton3D": Skeleton3D,
@@ -80,7 +80,7 @@ var valid_resource_whitelist = {
 	"Mesh": Mesh,
 	"MeshLibrary": MeshLibrary,
 	"MeshTexture": MeshTexture,
-	"NoiseTexture": NoiseTexture,
+	"NoiseTexture2D": NoiseTexture2D,
 	"ORMMaterial3D": ORMMaterial3D,
 	"PanoramaSkyMaterial": PanoramaSkyMaterial,
 	"PhysicalSkyMaterial": PhysicalSkyMaterial,
@@ -90,8 +90,6 @@ var valid_resource_whitelist = {
 	"PointMesh": PointMesh,
 	"PrimitiveMesh": PrimitiveMesh,
 	"PrismMesh": PrismMesh,
-	"ProxyTexture": ProxyTexture,
-	"QuadMesh": QuadMesh,
 	"Resource": Resource,
 	"Shader": Shader,
 	"ShaderMaterial": ShaderMaterial,
@@ -128,9 +126,9 @@ const valid_resource_script_whitelist = [
 static func check_if_script_type_is_valid(p_script: Script, p_node_class: String) -> bool:
 	# FIXME: dictionary cannot be const????
 	var script_type_table = {
-		avatar_physics_const: ["Position3D", "Node3D"],
-		avatar_definition_const: ["Position3D", "Node3D"],
-		avatar_definition_runtime_const: ["Position3D", "Node3D"],
+		avatar_physics_const: ["Marker3D", "Node3D"],
+		avatar_definition_const: ["Marker3D", "Node3D"],
+		avatar_definition_runtime_const: ["Marker3D", "Node3D"],
 		vsk_pipeline_const: ["Node"]
 	}
 	if typeof(script_type_table.get(p_script)) != TYPE_NIL:

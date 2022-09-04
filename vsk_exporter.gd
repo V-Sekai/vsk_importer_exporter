@@ -669,7 +669,7 @@ static func _fix_humanoid_skeleton(
 			* bone_lib_const.get_bone_global_rest_transform(eye_head_id, p_node._skeleton_node)
 			
 			eye_offset_transform = bone_gt.affine_inverse() * meta_gt
-			eye_spatial = Position3D.new()
+			eye_spatial = Marker3D.new()
 			
 			eye_node.free()
 		if mouth_head_id != -1:
@@ -678,7 +678,7 @@ static func _fix_humanoid_skeleton(
 			* bone_lib_const.get_bone_global_rest_transform(mouth_head_id, p_node._skeleton_node)
 			
 			mouth_offset_transform = bone_gt.affine_inverse() * meta_gt
-			mouth_spatial = Position3D.new()
+			mouth_spatial = Marker3D.new()
 	
 			mouth_node.free()
 	

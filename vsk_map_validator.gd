@@ -38,10 +38,10 @@ var valid_node_whitelist = {
 	"PathFollow3D": PathFollow3D,
 	"PhysicsBody3D": PhysicsBody3D,
 	"PinJoint3D": PinJoint3D,
-	"Position3D": Position3D,
+	"Marker3D": Marker3D,
 	"RayCast3D": RayCast3D,
 	"ReflectionProbe": ReflectionProbe,
-	"RigidDynamicBody3D": RigidDynamicBody3D,
+	"RigidBody3D": RigidBody3D,
 	"RemoteTransform3D": RemoteTransform3D,
 	"SliderJoint3D": SliderJoint3D,
 	"Skeleton3D": Skeleton3D,
@@ -125,7 +125,7 @@ var valid_resource_whitelist = {
 	"MeshLibrary": MeshLibrary,
 	"MeshTexture": MeshTexture,
 	"NavigationMesh": NavigationMesh,
-	"NoiseTexture": NoiseTexture,
+	"NoiseTexture2D": NoiseTexture2D,
 	"ORMMaterial3D": ORMMaterial3D,
 	"PackedScene": PackedScene,
 	"PhysicalSkyMaterial": PhysicalSkyMaterial,
@@ -136,8 +136,6 @@ var valid_resource_whitelist = {
 	"PointMesh": PointMesh,
 	"PrimitiveMesh": PrimitiveMesh,
 	"PrismMesh": PrismMesh,
-	"ProxyTexture": ProxyTexture,
-	"QuadMesh": QuadMesh,
 	"Resource": Resource,
 	"Shader": Shader,
 	"ShaderMaterial": ShaderMaterial,
@@ -176,9 +174,9 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 	var map_definition = load("res://addons/vsk_map/vsk_map_definition.gd")
 	var vsk_uro_pipeline = load("res://addons/vsk_importer_exporter/vsk_uro_pipeline.gd")
 	var script_type_table = {
-		network_spawn_const: ["Position3D", "Node3D"],
-		map_definition: ["Position3D", "Node3D"],
-		map_definition_runtime: ["Position3D", "Node3D"],
+		network_spawn_const: ["Marker3D", "Node3D"],
+		map_definition: ["Marker3D", "Node3D"],
+		map_definition_runtime: ["Marker3D", "Node3D"],
 		vsk_uro_pipeline: ["Node"]
 	}
 	if script_type_table.get(p_script) != null:
