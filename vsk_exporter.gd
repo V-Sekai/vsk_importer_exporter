@@ -346,8 +346,7 @@ func sanitise_entity_children(
 			if p_reference_node:
 				if i < p_reference_node.get_child_count():
 					child_reference_node = p_reference_node.get_child(i)
-				
-			p_visited = sanitise_entity_children(p_duplicate_root, p_reference_root, p_table, p_visited, p_duplicate_node, p_reference_node, p_validator, p_entity_root)
+			p_visited = sanitise_entity_children(p_duplicate_root, p_reference_root, p_table, p_visited, p_duplicate_node, child_reference_node, p_validator, p_entity_root)
 	
 	return p_visited
 
