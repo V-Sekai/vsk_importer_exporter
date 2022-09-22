@@ -1031,7 +1031,7 @@ func _user_content_submission_cancelled() -> void:
 	user_content_submission_cancelled = true
 
 func create_temp_folder() -> int:
-	var directory: Directory = Directory.new()
+	var directory: DirAccess = DirAccess.new();
 	var err: int = OK
 	
 	if !directory.dir_exists("user://temp"):
