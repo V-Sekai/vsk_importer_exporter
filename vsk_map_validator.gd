@@ -39,6 +39,7 @@ var valid_node_whitelist = {
 	"PhysicsBody3D": PhysicsBody3D,
 	"PinJoint3D": PinJoint3D,
 	"Marker3D": Marker3D,
+	"Position3D": Marker3D,
 	"RayCast3D": RayCast3D,
 	"ReflectionProbe": ReflectionProbe,
 	"RigidBody3D": RigidBody3D,
@@ -100,6 +101,7 @@ var valid_resource_whitelist = {
 	"AnimationNodeTransition": AnimationNodeTransition,
 	"ArrayMesh": ArrayMesh,
 	"AtlasTexture": AtlasTexture,
+	"AudioStreamSample": AudioStreamWAV, # compatibility. delete me.
 	"AudioStreamWAV": AudioStreamWAV,
 	"AudioStreamOggVorbis": AudioStreamOggVorbis,
 	"BoxMesh": BoxMesh,
@@ -146,14 +148,32 @@ var valid_resource_whitelist = {
 	"SphereMesh": SphereMesh,
 	"SphereShape3D": SphereShape3D,
 	"CompressedTexture2D": CompressedTexture2D,
+	"PortableCompressedTexture2D": PortableCompressedTexture2D,
+	"Cubemap": Cubemap,
+	"CubemapArray": CubemapArray,
 	"Texture2D": Texture2D,
-	"Texture3D": Texture3D,
 	"Texture2DArray": Texture2DArray,
+	"Texture3D": Texture3D,
 	"TextureLayered": TextureLayered,
+	"Image": Image,
 	"ViewportTexture": ViewportTexture,
 	"VoxelGIData": VoxelGIData,
 	"WorldBoundaryShape3D": WorldBoundaryShape3D,
 	"Occluder3D": Occluder3D,
+}
+
+var valid_external_path_whitelist = {
+	"res://addons/entity_manager/entity.gd":true,
+	"res://addons/vsk_entities/vsk_interactable_prop.tscn":true,
+	"res://addons/network_manager/network_spawn.gd":true,
+	"res://addons/vsk_importer_exporter/vsk_uro_pipeline.gd":true,
+	"res://addons/vsk_importer_exporter/vsk_pipeline.gd":true,
+	"res://addons/vsk_map/vsk_map_definition.gd":true,
+	"res://addons/vsk_map/vsk_map_definition_runtime.gd":true,
+	"res://vsk_default/audio/sfx/basketball_drop.wav":true,
+	"res://vsk_default/import/beachball/Scene_-_Root.tres":true,
+	"res://vsk_default/import/basketball_reexport/Scene_-_Root.tres":true,
+	"res://addons/vsk_map/vsk_map_entity_instance_record.gd":true,
 }
 
 ################
@@ -174,9 +194,9 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 	var map_definition = load("res://addons/vsk_map/vsk_map_definition.gd")
 	var vsk_uro_pipeline = load("res://addons/vsk_importer_exporter/vsk_uro_pipeline.gd")
 	var script_type_table = {
-		network_spawn_const: ["Marker3D", "Node3D"],
-		map_definition: ["Marker3D", "Node3D"],
-		map_definition_runtime: ["Marker3D", "Node3D"],
+		network_spawn_const: ["Position3D", "Marker3D", "Node3D"],
+		map_definition: ["Position3D", "Marker3D", "Node3D"],
+		map_definition_runtime: ["Position3D", "Marker3D", "Node3D"],
 		vsk_uro_pipeline: ["Node"]
 	}
 	if script_type_table.get(p_script) != null:

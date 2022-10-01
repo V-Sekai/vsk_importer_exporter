@@ -189,7 +189,7 @@ static func scan_ref_node_tree(p_ref_branch: RefNode, p_canvas: bool, p_validato
 		# reference nodes within this scene
 		if property_value is NodePath:
 			var ref_node_path_target: RefNode = get_ref_node_from_relative_path(p_ref_branch, property_value)
-			if ref_node_path_target == null:
+			if ref_node_path_target == null and property_name != "vskeditor_preview_camera_path" and property_name != "skeleton":
 				return {
 					"code":ImporterResult.UNSAFE_NODEPATH,
 					"info":"Unsafe node path on node: '{node_path}', property:'{property}', path:'{value}'".format(
@@ -552,7 +552,7 @@ static func sanitise_packed_scene(
 					break
 			
 			node_data_array.push_back(nd)
-	
+
 	if result["code"] == ImporterResult.OK:
 		var ref_root_node : RefNode = build_ref_node_tree(
 			node_data_array,
@@ -574,6 +574,8 @@ static func sanitise_packed_scene(
 	if result["code"] == ImporterResult.OK:
 		resulting_packed_scene = p_packed_scene
 		
+	if resulting_packed_scene == null:
+		push_warning("Validation failure: " + str(result))
 	return {"packed_scene":resulting_packed_scene, "result":result}
 
 static func sanitise_packed_scene_for_map(p_packed_scene: PackedScene) -> Dictionary:

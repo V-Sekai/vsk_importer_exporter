@@ -43,6 +43,7 @@ var valid_node_whitelist = {
 	"PhysicsBody3D": PhysicsBody3D,
 	"PinJoint3D": PinJoint3D,
 	"Marker3D": Marker3D,
+	"Position3D": Marker3D,
 	"RayCast3D": RayCast3D,
 	"RigidBody3D": RigidBody3D,
 	"RemoteTransform3D": RemoteTransform3D,
@@ -82,6 +83,7 @@ var valid_resource_whitelist = {
 	"MeshTexture": MeshTexture,
 	"NoiseTexture2D": NoiseTexture2D,
 	"ORMMaterial3D": ORMMaterial3D,
+	"PackedScene": PackedScene,
 	"PanoramaSkyMaterial": PanoramaSkyMaterial,
 	"PhysicalSkyMaterial": PhysicalSkyMaterial,
 	"ProceduralSkyMaterial": ProceduralSkyMaterial,
@@ -100,11 +102,27 @@ var valid_resource_whitelist = {
 	"SphereMesh": SphereMesh,
 	"SphereShape3D": SphereShape3D,
 	"CompressedTexture2D": CompressedTexture2D,
+	"PortableCompressedTexture2D": PortableCompressedTexture2D,
+	"Cubemap": Cubemap,
+	"CubemapArray": CubemapArray,
 	"Texture2D": Texture2D,
 	"Texture2DArray": Texture2DArray,
 	"Texture3D": Texture3D,
+	"TextureLayered": TextureLayered,
+	"Image": Image,
 	"ViewportTexture": ViewportTexture,
 	"WorldBoundaryShape3D": WorldBoundaryShape3D
+}
+
+var valid_external_path_whitelist = {
+	"res://addons/vsk_avatar/vsk_avatar_definition.gd":true,
+	"res://addons/vsk_avatar/vsk_avatar_definition_runtime.gd":true,
+	"res://addons/vsk_avatar/avatar_physics.gd":true,
+	"res://addons/vsk_avatar/physics/avatar_collidergroup.gd":true,
+	"res://addons/vsk_avatar/physics/avatar_springbone.gd":true,
+	"res://addons/vsk_importer_exporter/vsk_uro_pipeline.gd":true,
+	"res://addons/vsk_importer_exporter/vsk_pipeline.gd":true,
+	"res://vsk_default/audio/sfx/basketball_drop.wav":true,
 }
 
 const valid_scene_whitelist = []
