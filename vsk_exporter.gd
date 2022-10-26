@@ -333,7 +333,7 @@ func sanitise_entity_children(
 	) -> Dictionary:
 	if p_reference_node.get_owner() != p_entity_root:
 		if is_valid_entity(p_duplicate_root, p_validator):
-			p_visited = sanitise_node(p_duplicate_node, p_reference_node, p_table, p_visited, p_duplicate_root, p_reference_root, p_validator)
+			p_visited = sanitise_node(p_duplicate_node, p_reference_node, p_table, p_visited, p_duplicate_root, p_reference_root, p_validator, false)
 		else:
 			p_duplicate_root.queue_free()
 			if p_duplicate_root.get_parent():
@@ -357,11 +357,12 @@ func sanitise_node(
 	p_visited: Dictionary,
 	p_duplicate_root: Node,
 	p_reference_root: Node,
-	p_validator: RefCounted
+	p_validator: RefCounted,
+	p_is_canvas: bool
 	) -> Dictionary:
 	print("Sanitising node '%s'" % p_duplicate_root.get_path_to(p_duplicate_node))
 	
-	if ! p_validator.is_node_type_valid(p_duplicate_node, false):
+	if ! p_validator.is_node_type_valid(p_duplicate_node, p_is_canvas):
 		p_duplicate_node = p_validator.sanitise_node(p_duplicate_node)
 	
 	p_visited = sanitise_object(p_duplicate_node, p_table, p_visited, p_duplicate_root, p_validator)
@@ -387,6 +388,8 @@ func sanitise_node(
 				p_validator,
 				p_reference_node)
 	else:
+		var is_canvas: bool = p_is_canvas or (p_duplicate_node.get_script() != null and p_validator.is_valid_canvas_3d(p_duplicate_node.get_script(), p_duplicate_node.get_class()))
+		print(str(is_canvas) + "," + str(p_duplicate_node.get_script()) + "," + str(p_duplicate_node.get_class()) + "," + str(p_reference_node.get_script()) + "," + str(p_reference_node.get_class()))
 		for i in range(0, p_duplicate_node.get_child_count()):
 			var child_duplicate_node = p_duplicate_node.get_child(i)
 			var child_reference_node = null
@@ -395,7 +398,7 @@ func sanitise_node(
 				if i < p_reference_node.get_child_count():
 					child_reference_node = p_reference_node.get_child(i)
 			
-			p_visited = sanitise_node(child_duplicate_node, child_reference_node, p_table, p_visited, p_duplicate_root, p_reference_root, p_validator)
+			p_visited = sanitise_node(child_duplicate_node, child_reference_node, p_table, p_visited, p_duplicate_root, p_reference_root, p_validator, is_canvas)
 	
 	return p_visited
 	
@@ -604,7 +607,7 @@ func create_sanitised_duplication(p_node: Node, p_validator: RefCounted) -> Dict
 	visited["visited_nodes"] = []
 	visited["entity_nodes"] = []
 
-	visited = sanitise_node(duplicate_node, reference_node, duplication_table, visited, duplicate_node, reference_node, p_validator)
+	visited = sanitise_node(duplicate_node, reference_node, duplication_table, visited, duplicate_node, reference_node, p_validator, false)
 		
 	print("Node sanitisation complete!")
 		

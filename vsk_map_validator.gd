@@ -1,7 +1,8 @@
 @tool
 extends "res://addons/vsk_importer_exporter/vsk_validator.gd"
 
-var canvas_3d_anchor = load("res://addons/canvas_plane/canvas_3d_anchor.gd")
+const canvas_3d_anchor = preload("res://addons/canvas_plane/canvas_3d_anchor.gd")
+const canvas_3d_script = preload("res://addons/canvas_plane/canvas_3d.gd")
 
 # FIXME: dictionary cannot be const????
 var valid_node_whitelist = {
@@ -60,9 +61,6 @@ var valid_node_whitelist = {
 	"OccluderInstance3D": OccluderInstance3D,
 }
 
-# TODO: please fill in the missing nodes
-var canvas_3d_script : Script = load("res://addons/canvas_plane/canvas_3d.gd")
-
 # FIXME: dictionary cannot be const????
 var valid_canvas_node_whitelist = {
 	"Node":Node,
@@ -106,6 +104,8 @@ var valid_resource_whitelist = {
 	"AudioStreamOggVorbis": AudioStreamOggVorbis,
 	"BoxMesh": BoxMesh,
 	"BoxShape3D": BoxShape3D,
+	"CameraAttributesPhysical": CameraAttributesPhysical,
+	"CameraAttributesPractical": CameraAttributesPractical,
 	"CapsuleMesh": CapsuleMesh,
 	"CapsuleShape3D": CapsuleShape3D,
 	"ConcavePolygonShape3D": ConcavePolygonShape3D,
@@ -145,6 +145,7 @@ var valid_resource_whitelist = {
 	"Skin": Skin,
 	"Sky": Sky,
 	"StandardMaterial3D": StandardMaterial3D,
+	"StyleBoxEmpty": StyleBoxEmpty,
 	"SphereMesh": SphereMesh,
 	"SphereShape3D": SphereShape3D,
 	"CompressedTexture2D": CompressedTexture2D,
@@ -174,6 +175,21 @@ var valid_external_path_whitelist = {
 	"res://vsk_default/import/beachball/Scene_-_Root.tres":true,
 	"res://vsk_default/import/basketball_reexport/Scene_-_Root.tres":true,
 	"res://addons/vsk_map/vsk_map_entity_instance_record.gd":true,
+	"res://addons/canvas_plane/canvas_3d_anchor.gd":true,
+	"res://addons/canvas_plane/canvas_3d.gd":true,
+	"res://addons/network_manager/network_identity.gd":true,
+	"res://addons/vsk_entities/extensions/test_entity_rpc_table.gd":true,
+	"res://addons/network_manager/network_logic.gd":true,
+	"res://addons/vsk_entities/extensions/test_entity_simulation_logic.gd":true,
+	"res://addons/entity_manager/transform_notification.gd":true,
+	"res://addons/entity_manager/hierarchy_component.gd":true,
+	"res://addons/vsk_entities/extensions/prop_simulation_logic.gd":true,
+	"res://addons/network_manager/network_hierarchy.gd":true,
+	"res://addons/network_manager/network_transform.gd":true,
+	"res://addons/network_manager/network_model.gd":true,
+	"res://addons/network_manager/network_physics.gd":true,
+	"res://addons/vsk_entities/extensions/prop_pickup_controller.gd":true,
+	"res://addons/smoothing/smoothing.gd":true,
 }
 
 ################
@@ -193,11 +209,45 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 	var map_definition_runtime = load("res://addons/vsk_map/vsk_map_definition_runtime.gd")
 	var map_definition = load("res://addons/vsk_map/vsk_map_definition.gd")
 	var vsk_uro_pipeline = load("res://addons/vsk_importer_exporter/vsk_uro_pipeline.gd")
+
+
+	var entity_identity = load("res://addons/network_manager/network_identity.gd")
+	var entity_rpc_table = load("res://addons/vsk_entities/extensions/test_entity_rpc_table.gd")
+	var entity_network_logic = load("res://addons/network_manager/network_logic.gd")
+	var entity_test_simulation = load("res://addons/vsk_entities/extensions/test_entity_simulation_logic.gd")
+	var entity_transform_notification = load("res://addons/entity_manager/transform_notification.gd")
+	var entity_entity = load("res://addons/entity_manager/entity.gd")
+
+	var hierarchy_component = load("res://addons/entity_manager/hierarchy_component.gd")
+	var prop_simulation_logic = load("res://addons/vsk_entities/extensions/prop_simulation_logic.gd")
+	var network_hierarchy = load("res://addons/network_manager/network_hierarchy.gd")
+	var network_transform = load("res://addons/network_manager/network_transform.gd")
+	var network_model = load("res://addons/network_manager/network_model.gd")
+	var network_physics = load("res://addons/network_manager/network_physics.gd")
+	var prop_pickup_controller = load("res://addons/vsk_entities/extensions/prop_pickup_controller.gd")
+	var smoothing = load("res://addons/smoothing/smoothing.gd")
+
 	var script_type_table = {
 		network_spawn_const: ["Position3D", "Marker3D", "Node3D"],
 		map_definition: ["Position3D", "Marker3D", "Node3D"],
 		map_definition_runtime: ["Position3D", "Marker3D", "Node3D"],
-		vsk_uro_pipeline: ["Node"]
+		vsk_uro_pipeline: ["Node"],
+		canvas_3d_anchor: ["Node3D"],
+		canvas_3d_script: ["Node3D"],
+		entity_identity: ["Node"],
+		entity_rpc_table: ["Node"],
+		entity_network_logic: ["Node"],
+		entity_test_simulation: ["Node"],
+		entity_transform_notification: ["Node3D"],
+		entity_entity: ["Node3D"],
+		hierarchy_component: ["Node"],
+		prop_simulation_logic: ["Node"],
+		network_hierarchy: ["Node"],
+		network_transform: ["Node"],
+		network_model: ["Node"],
+		network_physics: ["Node"],
+		prop_pickup_controller: ["Node"],
+		smoothing: ["Node3D"],
 	}
 	if script_type_table.get(p_script) != null:
 		var valid_classes: Array = script_type_table.get(p_script)
@@ -226,7 +276,26 @@ func is_script_valid_for_children(p_script: Script, p_node_class: String):
 		return true
 	var network_spawn_const = load("res://addons/network_manager/network_spawn.gd")
 	var vsk_uro_pipeline = load("res://addons/vsk_importer_exporter/vsk_uro_pipeline.gd")
-	var valid_children_script_whitelist = [network_spawn_const, vsk_uro_pipeline]
+	
+	var entity_identity = load("res://addons/network_manager/network_identity.gd")
+	var entity_rpc_table = load("res://addons/vsk_entities/extensions/test_entity_rpc_table.gd")
+	var entity_network_logic = load("res://addons/network_manager/network_logic.gd")
+	var entity_test_simulation = load("res://addons/vsk_entities/extensions/test_entity_simulation_logic.gd")
+	var entity_transform_notification = load("res://addons/entity_manager/transform_notification.gd")
+	var entity_entity = load("res://addons/entity_manager/entity.gd")
+
+	var hierarchy_component = load("res://addons/entity_manager/hierarchy_component.gd")
+	var prop_simulation_logic = load("res://addons/vsk_entities/extensions/prop_simulation_logic.gd")
+	var network_hierarchy = load("res://addons/network_manager/network_hierarchy.gd")
+	var network_transform = load("res://addons/network_manager/network_transform.gd")
+	var network_model = load("res://addons/network_manager/network_model.gd")
+	var network_physics = load("res://addons/network_manager/network_physics.gd")
+	var prop_pickup_controller = load("res://addons/vsk_entities/extensions/prop_pickup_controller.gd")
+	var smoothing = load("res://addons/smoothing/smoothing.gd")
+
+	var valid_children_script_whitelist = [network_spawn_const, vsk_uro_pipeline, canvas_3d_script, canvas_3d_anchor,
+		entity_identity, entity_rpc_table, entity_network_logic, entity_test_simulation, entity_transform_notification, entity_entity,
+		hierarchy_component, prop_simulation_logic, network_hierarchy, network_transform, network_model, network_physics, prop_pickup_controller, smoothing]
 	if valid_children_script_whitelist.find(p_script) != -1:
 		return check_if_script_type_is_valid(p_script, p_node_class)
 				
@@ -284,14 +353,12 @@ func is_valid_canvas_3d(p_script: Script, p_node_class: String) -> bool:
 	if p_script == canvas_3d_script and p_node_class == "Node3D":
 		return true
 		
-	push_warning("Validator: Unknown Canvas3D " + str(p_script) + "/" + str(p_script.resource_path) + " node_class " + p_node_class + " not " + str(canvas_3d_script) + "/" + str(canvas_3d_script.resource_path) + " Node3D")
 	return false
 	
 func is_valid_canvas_3d_anchor(p_script: Script, p_node_class: String) -> bool:
 	if p_script == canvas_3d_anchor and p_node_class == "Node3D":
 		return true
 		
-	push_warning("Validator: Unknown Canvas3DAnchor " + str(p_script) + "/" + str(p_script.resource_path) + " node_class " + p_node_class + " not " + str(canvas_3d_script) + "/" + str(canvas_3d_script.resource_path) + " Node3D")
 	return false
 		
 func validate_value_track(p_subnames: String, p_node_class: String):
