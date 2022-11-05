@@ -58,6 +58,8 @@ var valid_node_whitelist = {
 }
 
 var valid_resource_whitelist = {
+	# "CameraAttributesPractical": CameraAttributesPractical, # Don't allow the old style camera attribute.
+	"CameraAttributesPhysical": CameraAttributesPhysical,
 	"AnimatedTexture": AnimatedTexture,
 	"ArrayMesh": ArrayMesh,
 	"AtlasTexture": AtlasTexture,
@@ -71,7 +73,7 @@ var valid_resource_whitelist = {
 	"CurveXYZTexture": CurveXYZTexture,
 	"CylinderMesh": CylinderMesh,
 	"CylinderShape3D": CylinderShape3D,
-	"Environment": Environment,
+	# "Environment": Environment, # Don't allow custom environments for performance optimization.
 	"GradientTexture1D": GradientTexture1D,
 	"GradientTexture2D": GradientTexture2D,
 	"HeightMapShape3D": HeightMapShape3D,
