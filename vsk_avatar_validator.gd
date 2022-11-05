@@ -11,7 +11,6 @@ const avatar_springbone_const = preload("res://addons/vsk_avatar/physics/avatar_
 
 const vsk_pipeline_const = preload("res://addons/vsk_importer_exporter/vsk_pipeline.gd")
 
-# FIXME: dictionary cannot be const????
 var valid_node_whitelist = {
 	"AnimatedSprite3D": AnimatedSprite3D,
 	"Area3D": Area3D,
@@ -58,7 +57,6 @@ var valid_node_whitelist = {
 	"WorldEnvironment": WorldEnvironment,
 }
 
-# FIXME: dictionary cannot be const????
 var valid_resource_whitelist = {
 	"AnimatedTexture": AnimatedTexture,
 	"ArrayMesh": ArrayMesh,

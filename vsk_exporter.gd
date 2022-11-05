@@ -409,8 +409,7 @@ func convert_object(p_table: Dictionary, p_subobject: Object, p_root: Node, p_va
 			
 		print("Image loaded...")
 			
-		var new_image_texture: ImageTexture = ImageTexture.new()
-		new_image_texture.create_from_image(image) #, p_subobject.flags)
+		var new_image_texture: ImageTexture = ImageTexture.create_from_image(image)
 		p_table[p_subobject] = new_image_texture
 	elif p_subobject is Texture2DArray:
 		print("Texture2DArray %s processing..." % p_subobject.resource_path)
