@@ -115,6 +115,8 @@ var valid_resource_whitelist = {
 }
 
 var valid_external_path_whitelist = {
+	"res://vsk_default/textures/groups_logo_no_bg.png":true,
+	"res://addons/vsk_menu/main_menu/title_screen.tscn":true,
 	"res://addons/vsk_avatar/vsk_avatar_definition.gd":true,
 	"res://addons/vsk_avatar/vsk_avatar_definition_runtime.gd":true,
 	"res://addons/vsk_avatar/avatar_physics.gd":true,
