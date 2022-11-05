@@ -57,7 +57,7 @@ var valid_node_whitelist = {
 	"VisibleOnScreenNotifier3D": VisibleOnScreenNotifier3D,
 	"VisualInstance3D": VisualInstance3D,
 	"VoxelGI": VoxelGI,
-	# "WorldEnvironment", "WorldEnvironment" # Don't allow WorldEnvironment for performance.
+	"WorldEnvironment": WorldEnvironment,
 	"OccluderInstance3D": OccluderInstance3D,
 }
 
