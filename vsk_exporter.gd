@@ -39,7 +39,7 @@ func get_valid_filenames(p_filename: String, p_validator: RefCounted, p_existing
 	if p_validator.is_path_an_entity(p_filename):
 		p_existing_valid_filenames.push_back(p_filename)
 		
-	if p_filename != "":
+	if not p_filename.is_empty():
 		if ResourceLoader.exists(p_filename):
 			var packed_scene: PackedScene = ResourceLoader.load(p_filename)
 			var instantiate: PackedScene = packed_scene.get_state().get_node_instance(0)
@@ -266,7 +266,7 @@ func sanitise_instance(p_duplicate_node: Node, p_reference_node: Node, p_duplica
 	print("Sanitising Instance: %s" % p_duplicate_node.get_name())
 	
 	# Check if this node is deriving an entity scene
-	if p_duplicate_node.get_scene_file_path() != "":
+	if not p_duplicate_node.get_scene_file_path().is_empty():
 		print("Node scene_file_path %s" % p_duplicate_node.get_scene_file_path())
 		# Check if this entity inherits any valid entity filenames
 		if is_valid_entity(p_duplicate_node, p_validator):
@@ -434,7 +434,7 @@ func convert_object(p_table: Dictionary, p_subobject: Object, p_root: Node, p_va
 		p_table[p_subobject] = new_tex_array
 	else:
 		if p_subobject is Resource:
-			if p_subobject.resource_path != "":
+			if not str(p_subobject.resource_path).is_empty():
 				print("Duplicating resource: " + p_subobject.resource_path)
 				var duplicate_resource: Resource = clone_resource(p_subobject)
 				duplicate_resource.resource_local_to_scene = true
