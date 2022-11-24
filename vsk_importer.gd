@@ -4,6 +4,7 @@ extends Node
 const validator_const = preload("res://addons/vsk_importer_exporter/vsk_validator.gd")
 const validator_avatar_const = preload("res://addons/vsk_importer_exporter/vsk_avatar_validator.gd")
 const validator_map_const = preload("res://addons/vsk_importer_exporter/vsk_map_validator.gd")
+const importer_const = preload("res://addons/vsk_importer_exporter/vsk_importer.gd")
 
 const NO_PARENT_SAVED = 0x7FFFFFFF
 const NAME_INDEX_BITS = 18
@@ -593,7 +594,7 @@ func sanitise_packed_scene_for_avatar(p_packed_scene: PackedScene) -> Dictionary
 	if ProjectSettings.get_setting("ugc/config/sanitize_avatar_import"):
 		print("Sanitising avatar...")
 		var validator = validator_avatar_const.new()
-		return sanitise_packed_scene(p_packed_scene, validator)
+		return importer_const.sanitise_packed_scene(p_packed_scene, validator)
 	else:
 		push_warning("Avatar validation is currently disabled.")
 		var result: Dictionary = {"code":ImporterResult.OK, "info":""}

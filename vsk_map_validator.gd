@@ -3,6 +3,7 @@ extends "res://addons/vsk_importer_exporter/vsk_validator.gd"
 
 const canvas_3d_anchor = preload("res://addons/canvas_plane/canvas_3d_anchor.gd")
 const canvas_3d_script = preload("res://addons/canvas_plane/canvas_3d.gd")
+const map_validator_const = preload("res://addons/vsk_importer_exporter/vsk_map_validator.gd")
 
 # FIXME: dictionary cannot be const????
 var valid_node_whitelist = {
@@ -266,7 +267,7 @@ func is_script_valid_for_root(p_script: Script, p_node_class: String):
 	var map_definition_runtime = load("res://addons/vsk_map/vsk_map_definition_runtime.gd")
 	var valid_root_script_whitelist = [map_definition, map_definition_runtime]
 	if valid_root_script_whitelist.find(p_script) != -1:
-		return check_if_script_type_is_valid(p_script, p_node_class)
+		return map_validator_const.check_if_script_type_is_valid(p_script, p_node_class)
 				
 	push_warning("Validator: Unknown root script " + str(p_script) + "/" + str(p_script.resource_path) + " node_class " + p_node_class)
 	return false
@@ -297,7 +298,7 @@ func is_script_valid_for_children(p_script: Script, p_node_class: String):
 		entity_identity, entity_rpc_table, entity_network_logic, entity_test_simulation, entity_transform_notification, entity_entity,
 		hierarchy_component, prop_simulation_logic, network_hierarchy, network_transform, network_model, network_physics, prop_pickup_controller, smoothing]
 	if valid_children_script_whitelist.find(p_script) != -1:
-		return check_if_script_type_is_valid(p_script, p_node_class)
+		return map_validator_const.check_if_script_type_is_valid(p_script, p_node_class)
 				
 	push_warning("Validator: Unknown children script " + str(p_script) + "/" + str(p_script.resource_path) + " node_class " + p_node_class)
 	return false
@@ -314,7 +315,7 @@ func is_script_valid_for_resource(p_script: Script):
 
 func is_node_type_valid(p_node: Node, p_child_of_canvas: bool) -> bool:
 	if is_node_type_string_valid(p_node.get_class(), p_child_of_canvas):
-		if !is_editor_only(p_node):
+		if !map_validator_const.is_editor_only(p_node):
 			return true
 			
 	push_warning("Validator: Unknown node type " + str(p_node.get_class()) + " (canvas " + str(p_child_of_canvas) + ")")
@@ -364,21 +365,21 @@ func is_valid_canvas_3d_anchor(p_script: Script, p_node_class: String) -> bool:
 func validate_value_track(p_subnames: String, p_node_class: String):
 	match p_node_class:
 		"MeshInstance3D":
-			return check_basic_node_3d_value_targets(p_subnames)
+			return map_validator_const.check_basic_node_3d_value_targets(p_subnames)
 		"Node3D":
-			return check_basic_node_3d_value_targets(p_subnames)
+			return map_validator_const.check_basic_node_3d_value_targets(p_subnames)
 		"DirectionalLight":
-			return check_basic_node_3d_value_targets(p_subnames)
+			return map_validator_const.check_basic_node_3d_value_targets(p_subnames)
 		"OmniLight":
-			return check_basic_node_3d_value_targets(p_subnames)
+			return map_validator_const.check_basic_node_3d_value_targets(p_subnames)
 		"SpotLight":
-			return check_basic_node_3d_value_targets(p_subnames)
+			return map_validator_const.check_basic_node_3d_value_targets(p_subnames)
 		"Camera3D":
-			return check_basic_node_3d_value_targets(p_subnames)
+			return map_validator_const.check_basic_node_3d_value_targets(p_subnames)
 		"GPUParticles3D":
-			return check_basic_node_3d_value_targets(p_subnames)
+			return map_validator_const.check_basic_node_3d_value_targets(p_subnames)
 		"CPUParticles":
-			return check_basic_node_3d_value_targets(p_subnames)
+			return map_validator_const.check_basic_node_3d_value_targets(p_subnames)
 		_:
 			return false
 

@@ -8,6 +8,7 @@ var file_save_path: String = ""
 var save_dialog: FileDialog = null
 var current_scene_root: Node = null
 var user_content_submission_cancelled: bool = false
+const vsk_exporter_const = preload("vsk_exporter.gd")
 
 var vsk_exporter_addon_interface: RefCounted = vsk_exporter_addon_interface_const.new()
 
@@ -436,7 +437,7 @@ func convert_object(p_table: Dictionary, p_subobject: Object, p_root: Node, p_va
 		if p_subobject is Resource:
 			if not str(p_subobject.resource_path).is_empty():
 				print("Duplicating resource: " + p_subobject.resource_path)
-				var duplicate_resource: Resource = clone_resource(p_subobject)
+				var duplicate_resource: Resource = vsk_exporter_const.clone_resource(p_subobject)
 				duplicate_resource.resource_local_to_scene = true
 				duplicate_resource.take_over_path("")
 				duplicate_resource.setup_local_to_scene()
@@ -803,7 +804,7 @@ func create_packed_scene_for_avatar(p_root: Node,\
 		p_root.add_child(duplicate_node, true)
 		
 		# Replace the node with lighter script with the metadata removed
-		duplicate_node = convert_to_runtime_user_content(duplicate_node, avatar_definition_runtime_const)
+		duplicate_node = vsk_exporter_const.convert_to_runtime_user_content(duplicate_node, avatar_definition_runtime_const)
 		
 		var has_humanoid_skeleton: bool = false
 		
@@ -812,7 +813,7 @@ func create_packed_scene_for_avatar(p_root: Node,\
 			
 		
 		if has_humanoid_skeleton:
-			var humanoid_skeleton_dict: Dictionary = _fix_humanoid_skeleton(p_root, duplicate_node)
+			var humanoid_skeleton_dict: Dictionary = vsk_exporter_const._fix_humanoid_skeleton(p_root, duplicate_node)
 			err = humanoid_skeleton_dict["err"]
 			duplicate_node = humanoid_skeleton_dict["node"]
 		else:
@@ -898,7 +899,7 @@ func create_packed_scene_for_map(_p_root, p_node) -> Dictionary:
 		packed_scene_export = PackedScene.new()
 		
 		print("Converting to runtime user content...")
-		duplicate_node = convert_to_runtime_user_content(duplicate_node, map_definition_runtime)
+		duplicate_node = vsk_exporter_const.convert_to_runtime_user_content(duplicate_node, map_definition_runtime)
 		duplicate_node.map_resources = entity_resource_array
 
 		print("Add entity nodes to instantiate list...")

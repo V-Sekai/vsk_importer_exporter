@@ -11,6 +11,8 @@ const avatar_springbone_const = preload("res://addons/vsk_avatar/physics/avatar_
 
 const vsk_pipeline_const = preload("res://addons/vsk_importer_exporter/vsk_pipeline.gd")
 
+const vsk_avatar_validator_const = preload("res://addons/vsk_importer_exporter/vsk_avatar_validator.gd")
+
 var valid_node_whitelist = {
 	"AnimatedSprite3D": AnimatedSprite3D,
 	"Area3D": Area3D,
@@ -164,7 +166,7 @@ func is_script_valid_for_root(p_script: Script, p_node_class: String):
 		return true
 	
 	if valid_root_script_whitelist.find(p_script) != -1:
-		return check_if_script_type_is_valid(p_script, p_node_class)
+		return vsk_avatar_validator_const.check_if_script_type_is_valid(p_script, p_node_class)
 		
 	return false
 
@@ -173,7 +175,7 @@ func is_script_valid_for_children(p_script: Script, p_node_class: String):
 		return true
 	
 	if valid_children_script_whitelist.find(p_script) != -1:
-		return check_if_script_type_is_valid(p_script, p_node_class)
+		return vsk_avatar_validator_const.check_if_script_type_is_valid(p_script, p_node_class)
 				
 	return false
 
@@ -188,7 +190,7 @@ func is_script_valid_for_resource(p_script: Script):
 
 func is_node_type_valid(p_node : Node, p_child_of_canvas: bool) -> bool:
 	if is_node_type_string_valid(p_node.get_class(), p_child_of_canvas):
-		if !is_editor_only(p_node):
+		if !vsk_avatar_validator_const.is_editor_only(p_node):
 			return true
 	return false
 	
