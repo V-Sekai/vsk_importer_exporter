@@ -377,6 +377,10 @@ static func build_ref_node_tree(
 		if p_names.size() > snode.name_id - 1:
 			ref_node.name = p_names[snode.name_id]
 			for property in snode.properties:
+				if property["name"] < 0 or property["name"] >= p_names.size():
+					continue
+				if property["value"] < 0 or property["value"] >= p_variants.size():
+					continue
 				var property_name: String = p_names[property["name"]]
 				var property_value = p_variants[property["value"]]
 				
