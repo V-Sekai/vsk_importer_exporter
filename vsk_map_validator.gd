@@ -257,7 +257,7 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 		network_physics: ["Node"],
 		prop_pickup_controller: ["Node"],
 		smoothing: ["Node3D"],
-		mirror: ["Node3D"],
+		mirror: ["MeshInstance3D"],
 	}
 	if script_type_table.get(p_script) != null:
 		var valid_classes: Array = script_type_table.get(p_script)
