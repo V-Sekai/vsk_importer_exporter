@@ -24,7 +24,7 @@ func _enter_tree() -> void:
 	add_autoload_singleton("VSKExporter", "res://addons/vsk_importer_exporter/vsk_exporter.gd")
 	add_autoload_singleton("VSKImporter", "res://addons/vsk_importer_exporter/vsk_importer.gd")
 
+
 func _exit_tree() -> void:
 	remove_autoload_singleton("VSKImporter")
 	remove_autoload_singleton("VSKExporter")
-
