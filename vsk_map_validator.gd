@@ -194,8 +194,6 @@ var valid_external_path_whitelist = {
 	"res://addons/network_manager/network_physics.gd": true,
 	"res://addons/vsk_entities/extensions/prop_pickup_controller.gd": true,
 	"res://addons/smoothing/smoothing.gd": true,
-	"res://addons/mirror/mirror.gdshader": true,
-	"res://addons/mirror/mirror.gd": true,
 }
 
 ################
@@ -232,7 +230,6 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 	var network_physics = load("res://addons/network_manager/network_physics.gd")
 	var prop_pickup_controller = load("res://addons/vsk_entities/extensions/prop_pickup_controller.gd")
 	var smoothing = load("res://addons/smoothing/smoothing.gd")
-	var mirror = load("res://addons/mirror/mirror.gd")
 
 	var script_type_table = {
 		network_spawn_const: ["Position3D", "Marker3D", "Node3D"],
@@ -255,7 +252,6 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 		network_physics: ["Node"],
 		prop_pickup_controller: ["Node"],
 		smoothing: ["Node3D"],
-		mirror: ["MeshInstance3D"],
 	}
 	if script_type_table.get(p_script) != null:
 		var valid_classes: Array = script_type_table.get(p_script)
@@ -302,7 +298,6 @@ func is_script_valid_for_children(p_script: Script, p_node_class: String):
 	var network_physics = load("res://addons/network_manager/network_physics.gd")
 	var prop_pickup_controller = load("res://addons/vsk_entities/extensions/prop_pickup_controller.gd")
 	var smoothing = load("res://addons/smoothing/smoothing.gd")
-	var mirror = load("res://addons/mirror/mirror.gd")
 
 	var valid_children_script_whitelist = [
 		network_spawn_const,
@@ -323,7 +318,6 @@ func is_script_valid_for_children(p_script: Script, p_node_class: String):
 		network_physics,
 		prop_pickup_controller,
 		smoothing,
-		mirror
 	]
 	if valid_children_script_whitelist.find(p_script) != -1:
 		return map_validator_const.check_if_script_type_is_valid(p_script, p_node_class)
