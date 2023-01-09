@@ -29,6 +29,7 @@ var valid_node_whitelist = {
 	"Joint3D": Joint3D,
 	"Light3D": Light3D,
 	"LightmapGI": LightmapGI,
+	"Label3D": Label3D,
 	"MeshInstance3D": MeshInstance3D,
 	"MultiMeshInstance3D": MultiMeshInstance3D,
 	"NavigationAgent3D": NavigationAgent3D,
@@ -63,7 +64,6 @@ var valid_node_whitelist = {
 	"SubViewport": SubViewport,
 }
 
-# FIXME: dictionary cannot be const????
 var valid_canvas_node_whitelist = {
 	"Node": Node,
 	"HBoxContainer": HBoxContainer,
