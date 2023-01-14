@@ -755,8 +755,6 @@ func save_user_content_resource(p_path: String, p_packed_scene: PackedScene) -> 
 	# Uncomment to debug exported scene references.
 	# ResourceSaver.save(p_packed_scene, p_path.replace(".scn",".tscn"), ResourceSaver.FLAG_OMIT_EDITOR_PROPERTIES)
 	var ret = ResourceSaver.save(p_packed_scene, p_path, EXPORT_FLAGS)
-	EditorPlugin.new().get_editor_interface().get_resource_filesystem().update_file(p_path)
-	EditorPlugin.new().get_editor_interface().get_resource_filesystem().scan()
 	return ret
 
 
