@@ -12,7 +12,7 @@ const vsk_exporter_const = preload("vsk_exporter.gd")
 
 var vsk_exporter_addon_interface: RefCounted = vsk_exporter_addon_interface_const.new()
 
-const EXPORT_FLAGS = ResourceSaver.FLAG_COMPRESS | ResourceSaver.FLAG_OMIT_EDITOR_PROPERTIES
+const EXPORT_FLAGS = ResourceSaver.FLAG_COMPRESS # FIXME: fire 2023-02-10 # | ResourceSaver.FLAG_OMIT_EDITOR_PROPERTIES
 
 const vsk_types_const = preload("vsk_types.gd")
 
