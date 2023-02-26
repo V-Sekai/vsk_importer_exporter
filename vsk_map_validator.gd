@@ -223,12 +223,10 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 	var entity_entity = load("res://addons/entity_manager/entity.gd")
 
 	var hierarchy_component = load("res://addons/entity_manager/hierarchy_component.gd")
-	var prop_simulation_logic = load("res://addons/vsk_entities/extensions/prop_simulation_logic.gd")
 	var network_hierarchy = load("res://addons/network_manager/network_hierarchy.gd")
 	var network_transform = load("res://addons/network_manager/network_transform.gd")
 	var network_model = load("res://addons/network_manager/network_model.gd")
 	var network_physics = load("res://addons/network_manager/network_physics.gd")
-	var prop_pickup_controller = load("res://addons/vsk_entities/extensions/prop_pickup_controller.gd")
 	var smoothing = load("res://addons/smoothing/smoothing.gd")
 
 	var script_type_table = {
@@ -245,12 +243,10 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 		entity_transform_notification: ["Node3D"],
 		entity_entity: ["Node3D"],
 		hierarchy_component: ["Node"],
-		prop_simulation_logic: ["Node"],
 		network_hierarchy: ["Node"],
 		network_transform: ["Node"],
 		network_model: ["Node"],
 		network_physics: ["Node"],
-		prop_pickup_controller: ["Node"],
 		smoothing: ["Node3D"],
 	}
 	if script_type_table.get(p_script) != null:
