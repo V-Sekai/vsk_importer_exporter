@@ -216,7 +216,6 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 
 	var entity_identity = load("res://addons/network_manager/network_identity.gd")
 	var entity_network_logic = load("res://addons/network_manager/network_logic.gd")
-	var entity_test_simulation = load("res://addons/vsk_entities/extensions/test_entity_simulation_logic.gd")
 	var entity_transform_notification = load("res://addons/entity_manager/transform_notification.gd")
 	var entity_entity = load("res://addons/entity_manager/entity.gd")
 
@@ -236,7 +235,6 @@ static func check_if_script_type_is_valid(p_script: Script, p_node_class: String
 		canvas_3d_script: ["Node3D"],
 		entity_identity: ["Node"],
 		entity_network_logic: ["Node"],
-		entity_test_simulation: ["Node"],
 		entity_transform_notification: ["Node3D"],
 		entity_entity: ["Node3D"],
 		hierarchy_component: ["Node"],
